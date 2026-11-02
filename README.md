@@ -18,6 +18,7 @@
 <p align="center"><b>Hold your phone near. Say the task. A coding session starts on your Mac.</b></p>
 
 <p align="center">
+  <a href="https://andyyaro.github.io/nearsay/film.html">Film</a> |
   <a href="#quick-start">Quickstart</a> |
   <a href="docs/IPHONE.md">iPhone setup</a> |
   <a href="#how-it-works">How it works</a> |
@@ -26,6 +27,12 @@
   <a href="docs/TROUBLESHOOTING.md">Troubleshooting</a> |
   <a href="CHANGELOG.md">Changelog</a>
 </p>
+
+<p align="center">
+  <a href="https://andyyaro.github.io/nearsay/film.html"><img src="docs/assets/readme/nearsay-in-action.webp" alt="One real tap, from the launch film: the phone touches the sticker on a shut MacBook and listens, a clock counts the seconds since the tap, and the Mac's Terminal fills in beside it as Claude Code starts in the inbox project with the spoken task, Remote Control turns on and Claude replies 11.5 seconds after the tap. Select to watch the 77-second film." width="920"></a>
+</p>
+
+<p align="center"><b>Watch the 77-second launch film:</b> <a href="https://andyyaro.github.io/nearsay/film.html">with sound and captions</a> · <a href="https://andyyaro.github.io/nearsay/film/nearsay-launch.mp4">MP4, 26.5 MB</a> · <a href="media/launch-film/">how it was made</a></p>
 
 **nearsay** is a voice launcher for Claude Code. Hold your iPhone to an NFC sticker on your Mac,
 say what you want done, and a Claude Code session starts on the Mac, in the right project,
@@ -310,6 +317,7 @@ run an SSH command with standard input on an NFC tag will work with the same key
 | [`tests/`](tests/) | The 111-test suite, including the end-to-end SSH run |
 | [`docs/`](docs/) | [iPhone setup](docs/IPHONE.md), [threat model](docs/THREAT_MODEL.md), [troubleshooting](docs/TROUBLESHOOTING.md) |
 | [`docs/assets/brand/`](docs/assets/brand/) | The nearsay logo, light and dark |
+| [`media/launch-film/`](media/launch-film/README.md) | The 77-second launch film's source: composition, 3D stage, narration, sound and the watch page |
 
 ## Uninstall
 
@@ -323,9 +331,12 @@ the phone. Your project folders are never touched.
 ## Project status
 
 Version 1.0.0. First released as **tapclaude** in October 2026 and renamed **nearsay** in
-November 2026. Tested end to end from a real iPhone to a real Mac. If you installed it under the old name,
-[CHANGELOG.md](CHANGELOG.md#moving-from-tapclaude) shows how to move over; the Shortcut on your
-phone does not change.
+November 2026. Tested end to end from a real iPhone to a real Mac. If you installed it under the
+old name, [CHANGELOG.md](CHANGELOG.md#moving-from-tapclaude) shows how to move over; the Shortcut
+on your phone does not change.
+
+**The launch film** (2026-11-02) shows one real tap, timed from screen recordings; its source is
+in [`media/launch-film/`](media/launch-film/).
 
 Contributions are welcome; see [CONTRIBUTING.md](CONTRIBUTING.md) and the
 [code of conduct](CODE_OF_CONDUCT.md).

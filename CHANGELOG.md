@@ -17,6 +17,11 @@ The project is now **nearsay**. Nothing about how it works has changed: the phon
 - README: the nearsay logo, badges, a flow diagram and a list of known limitations.
 
 ### Added
+- **The launch film.** A 77-second film of one real tap, timed from screen recordings, then how
+  the words travel and find their project. It plays at the top of the README and on its
+  [watch page](https://andyyaro.github.io/nearsay/film.html), with captions and a transcript. Its
+  source is in [media/launch-film/](media/launch-film/); the MP4 is a release asset, not in git,
+  and [film.yml](.github/workflows/film.yml) publishes the page to GitHub Pages.
 - CI: the full suite on macOS with Apple's system Python and a current one, on every push to
   `main` and every pull request ([tests.yml](.github/workflows/tests.yml)).
 - [SECURITY.md](SECURITY.md), [CONTRIBUTING.md](CONTRIBUTING.md),

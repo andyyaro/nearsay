@@ -1,0 +1,167 @@
+<template>
+  <style>
+    #root { position: absolute; inset: 0; }
+    #s-top { opacity: 0; }
+    /* the clock: seconds since the tap, real time (the phone recording's own timing), top right */
+    #rt { position: absolute; right: 96px; top: 84px; width: 380px; text-align: right; opacity: 0; }
+    #rt .kicker { font-size: 20px; line-height: 26px; color: var(--ink-2); }
+    #rt-n { margin-top: 2px; font-size: 76px; line-height: 84px; font-weight: 700; letter-spacing: -2px; }
+    #rt-n span { font-size: 40px; font-weight: 600; letter-spacing: 0; margin-left: 6px; }
+    #rt-src { margin-top: 2px; font-size: 20px; line-height: 26px; color: var(--ink-2); }
+
+    /* ---- the Mac: its Terminal, redrawn from the screen recording in Geist (left; the 3D Mac is shut, on the right) */
+    #mac { position: absolute; left: 96px; top: 236px; width: 800px; opacity: 0; }
+    .lbl { display: flex; align-items: center; gap: 10px; margin-bottom: 14px; }
+    .lbl .kicker { font-size: 22px; line-height: 28px; }
+    #win { position: relative; height: 560px; border-radius: 18px; background: var(--term); overflow: hidden;
+           box-shadow: 0 30px 60px -30px rgba(6, 41, 43, 0.45); }
+    #bar { height: 46px; background: var(--term-bar); display: flex; align-items: center; padding: 0 18px; position: relative; }
+    #bar i { width: 14px; height: 14px; border-radius: 50%; margin-right: 9px; display: block; }
+    #bar b { position: absolute; left: 0; right: 0; text-align: center; font-size: 18px; line-height: 46px; font-weight: 500; color: #b9bdbf; }
+    #body { position: relative; padding: 22px 28px; font-size: 22px; line-height: 32px; color: var(--term-text); }
+    .row { position: relative; opacity: 0; }
+    .dim { color: var(--term-dim); }
+    .or { color: #e8956f; }
+    .stamp { position: absolute; right: 0; top: 3px; padding: 0 10px; border-radius: 8px; background: rgba(25, 199, 181, 0.16);
+             font-size: 18px; line-height: 26px; font-weight: 600; color: #6fe6d8; font-variant-numeric: tabular-nums; }
+    .chev { display: inline-block; width: 14px; height: 14px; margin: 0 8px; vertical-align: 0; color: var(--term-dim); }
+    #r-banner { position: absolute; left: 28px; right: 28px; top: 22px; }
+    #r-head b { font-size: 24px; font-weight: 700; color: #fff; }
+    #rc-a, #rc-b { position: absolute; }
+    #r-prompt { margin: 16px -28px 0; padding: 2px 28px; background: #353637; }
+    #r-rc { margin-top: 16px; }
+    #r-rc b { font-weight: 600; color: #fff; }
+    #r-reply { margin-top: 16px; padding-left: 22px; }
+    #r-reply::before { content: ""; position: absolute; left: 2px; top: 12px; width: 9px; height: 9px; border-radius: 50%; background: #fff; }
+    #r-brew { margin-top: 10px; padding-left: 22px; }
+    .ast { position: absolute; left: 0; top: 8px; width: 15px; height: 15px; }
+    #st { position: absolute; left: 28px; right: 28px; bottom: 80px; height: 32px; }
+    #st .row { position: absolute; left: 0; top: 0; padding-left: 22px; }
+    #inp { position: absolute; left: 0; right: 0; bottom: 0; height: 62px; border-top: 1px solid #3a3b3c; padding: 14px 28px;
+           display: flex; align-items: center; gap: 12px; color: var(--term-dim); font-size: 22px; }
+    #cur { width: 11px; height: 24px; background: #c9cccd; display: block; }
+    #cur0 { position: absolute; left: 28px; top: 26px; width: 11px; height: 24px; background: #c9cccd; }
+
+    /* ---- the phone: its notifications, enlarged (right, above the 3D phone) */
+    #ph { position: absolute; right: 72px; top: 292px; width: 660px; }
+    #ph .lbl { justify-content: flex-end; opacity: 0; }
+    .nt { position: absolute; right: 0; top: 44px; width: 660px; display: flex; gap: 18px; padding: 20px 24px 22px 20px; border-radius: 30px;
+          background: rgba(28, 28, 30, 0.95); color: #f2f2f2; opacity: 0; box-shadow: 0 24px 50px -24px rgba(6, 41, 43, 0.5); }
+    .nt .app { flex: none; width: 62px; height: 62px; border-radius: 15px; display: flex; align-items: center; justify-content: center; }
+    .nt .tx { flex: 1; min-width: 0; }
+    .nt .t1 { display: flex; justify-content: space-between; gap: 12px; font-size: 25px; line-height: 31px; font-weight: 600; }
+    .nt .t1 span { font-size: 19px; font-weight: 400; color: #9b9b9f; }
+    .nt .t2 { margin-top: 2px; font-size: 24px; line-height: 31px; color: #e2e2e4; }
+    .nt .t2 .ic { display: inline-block; width: 22px; height: 22px; vertical-align: -3px; margin-right: 6px; }
+    #lid { position: absolute; right: 72px; top: 336px; width: 660px; padding: 22px 26px 24px; border-radius: 26px; background: #fff; opacity: 0; }
+    #lid .t1 { display: flex; align-items: center; gap: 12px; font-size: 28px; line-height: 34px; font-weight: 600; }
+    #lid .t2 { margin-top: 8px; padding-left: 26px; font-size: 23px; line-height: 30px; color: var(--ink-3); }
+  </style>
+  <div id="root" data-composition-id="s3-tap" data-width="1920" data-height="1080">
+    <div id="s-top" class="topleft">
+      <div class="kicker">One real tap</div>
+      <div class="head">In real time.</div>
+    </div>
+
+    <div id="rt">
+      <div class="kicker">Since the tap</div>
+      <div id="rt-n" class="tnum"><b id="rt-v">0.0</b><span>s</span></div>
+      <div id="rt-src">From screen recordings of a real tap</div>
+    </div>
+
+    <div id="mac">
+      <div class="lbl"><span class="dot t"></span><span class="kicker">On the Mac</span></div>
+      <div id="win">
+        <div id="bar"><i style="background:#ff5f57"></i><i style="background:#febc2e"></i><i style="background:#28c840"></i><b>inbox: Yo</b></div>
+        <div id="body">
+          <div id="cur0"></div>
+          <div class="row" id="r-banner">nearsay<svg class="chev"><use href="#ic-chevron-right" /></svg>inbox<svg class="chev"><use href="#ic-chevron-right" /></svg>Yo<span class="stamp" id="sb"></span></div>
+          <div class="row" id="r-head">
+            <b>Claude Code</b><span class="stamp" id="sc"></span><br />
+            <span class="dim">Opus 5.5 with xhigh effort</span><br />
+            <span class="dim">~/nearsay-inbox · </span><span style="position: relative"><span id="rc-a" class="or">/rc connecting…</span><span id="rc-b" class="dim" style="opacity: 0">/rc</span></span>
+          </div>
+          <div class="row" id="r-prompt"><span class="dim">›</span> Yo</div>
+          <div class="row" id="r-rc"><b>/remote-control is active</b><span class="dim"> · Continue here, on your phone, or at claude.ai/code</span><span class="stamp" id="sr"></span></div>
+          <div class="row" id="r-reply">Hey, what are we working on? I'm in ~/nearsay-inbox.<span class="stamp" id="sy"></span></div>
+          <div class="row dim" id="r-brew"><svg class="ast" viewBox="0 0 16 16"><path d="M8 1.5v13M2.4 4.75l11.2 6.5M2.4 11.25l11.2-6.5" stroke="currentColor" stroke-width="2" stroke-linecap="round" /></svg>Brewed for 3s · done 2:02 AM</div>
+        </div>
+        <div id="st">
+          <div class="row or" id="st1"><svg class="ast" viewBox="0 0 16 16"><path d="M8 1.5v13M2.4 4.75l11.2 6.5M2.4 11.25l11.2-6.5" stroke="currentColor" stroke-width="2" stroke-linecap="round" /></svg>Scampering…</div>
+          <div class="row or" id="st2"><svg class="ast" viewBox="0 0 16 16"><path d="M8 1.5v13M2.4 4.75l11.2 6.5M2.4 11.25l11.2-6.5" stroke="currentColor" stroke-width="2" stroke-linecap="round" /></svg>Moonwalking… <span class="dim">(2s · thinking with xhigh effort)</span></div>
+        </div>
+        <div id="inp" style="opacity: 0"><span>›</span><span id="cur"></span></div>
+      </div>
+    </div>
+
+    <div id="ph">
+      <div class="lbl" id="ph-l"><span class="dot t"></span><span class="kicker">On the phone</span></div>
+      <div class="nt" id="n1">
+        <div class="app" style="background: linear-gradient(160deg, #e07bdc, #8a5cf6)"><svg class="ic" style="font-size: 36px; color: #fff"><use href="#ic-square-2-layers-3d-top-filled" /></svg></div>
+        <div class="tx"><div class="t1">Tap Claude<span>now</span></div>
+          <div class="t2"><svg class="ic"><use href="#ic-checkmark" /></svg>inbox · starting: Yo</div></div>
+      </div>
+      <div class="nt" id="n2">
+        <div class="app" style="background: var(--claude)"><svg viewBox="0 0 40 40" width="40" height="40"><g stroke="#fff7e8" stroke-width="4" stroke-linecap="round">
+          <path d="M20 4v10M20 26v10M4 20h10M26 20h10M8.7 8.7l7 7M24.3 24.3l7 7M31.3 8.7l-7 7M15.7 24.3l-7 7" /></g></svg></div>
+        <div class="tx"><div class="t1">Remote control enabled: inbox: Yo<span>now</span></div>
+          <div class="t2">Your Claude Code session is ready to control from your phone.</div></div>
+      </div>
+    </div>
+
+    <div id="lid">
+      <div class="t1"><span class="dot o"></span><span>With the lid shut, the Mac must stay awake</span></div>
+      <div class="t2">Closed-display mode works: an external display, keyboard and power.</div>
+    </div>
+  </div>
+  <script>
+    (function () {
+      const TM = window.TM, C = TM.cues, REC = TM.rec, VO = window.VO;
+      const S0 = TM.s3[0], S1 = TM.s3[1];
+      const at = (k) => TM.rec0 + REC[k] - S0;           // a moment of the recording, in this scene's time
+      const r = (t) => t - S0;
+      const since = (k) => "+" + (REC[k] - REC.tap).toFixed(1) + " s";
+      document.querySelector("#sb").textContent = since("banner");
+      document.querySelector("#sc").textContent = since("claude");
+      document.querySelector("#sr").textContent = since("rc");
+      document.querySelector("#sy").textContent = since("reply");
+      const tl = gsap.timeline({ paused: true });
+      const pop = (sel, t, y = 14) => tl.fromTo(sel, { opacity: 0, y }, { opacity: 1, y: 0, duration: 0.4, ease: "power3.out" }, t);
+      const on = (sel, t) => tl.fromTo(sel, { opacity: 0 }, { opacity: 1, duration: 0.12, ease: "none" }, t);
+      const off = (sel, t, d = 0.12) => tl.to(sel, { opacity: 0, duration: d, ease: "none" }, t);
+
+      // the title while the phone comes in; gone before the camera reaches the phone
+      tl.fromTo("#s-top", { opacity: 0, y: 16 }, { opacity: 1, y: 0, duration: 0.55, ease: "power3.out" }, 0.2);
+      tl.to("#s-top", { opacity: 0, duration: 0.35, ease: "power1.in" }, r(C.t_contact) + 0.25);
+
+      // the clock: runs in real time from the tap to Claude's reply, then holds
+      pop("#rt", at("tap") - 0.35);
+      const n = { v: 0 }, ne = document.querySelector("#rt-v");
+      tl.fromTo(n, { v: 0 }, { v: REC.reply - REC.tap, duration: REC.reply - REC.tap, ease: "none",
+        onUpdate: () => { ne.textContent = n.v.toFixed(1); } }, at("tap"));
+
+      // the Mac: the Terminal opens; the banner; Claude Code starts with the words as its task; remote control; the reply
+      tl.fromTo("#mac", { opacity: 0, y: 24, scale: 0.97 }, { opacity: 1, y: 0, scale: 1, duration: 0.45, ease: "back.out(1.4)", transformOrigin: "50% 60%" }, at("term"));
+      on("#r-banner", at("banner")); tl.set("#cur0", { y: 40 }, at("banner"));
+      off("#r-banner", at("claude")); off("#cur0", at("claude"));
+      on("#r-head", at("claude")); on("#r-prompt", at("claude")); on("#inp", at("claude")); on("#st1", at("claude"));
+      off("#rc-a", at("rc")); on("#rc-b", at("rc")); on("#r-rc", at("rc"));
+      tl.set("#st1", { opacity: 0 }, at("think")); tl.set("#st2", { opacity: 1 }, at("think"));
+      off("#st2", at("reply")); on("#r-reply", at("reply")); on("#r-brew", at("reply"));
+
+      // the phone: the Shortcut's reply, then the Claude app's
+      pop("#ph-l", at("phone_ok") - 0.1, 10);
+      pop("#n1", at("phone_ok"));
+      off("#n1", at("phone_rc") - 0.3, 0.25);
+      pop("#n2", at("phone_rc"));
+      // "...so the lid can stay closed": the Mac has to be awake (nearsay's README, limitation 6)
+      const lidW = VO.v08.words.find((w) => /^lid/.test(w.w.toLowerCase()));
+      const tLid = r(lidW.t0) - 0.25;
+      off("#n2", tLid - 0.3, 0.25); off("#ph-l", tLid - 0.3, 0.25);
+      pop("#lid", tLid);
+
+      tl.to(["#rt", "#mac", "#lid"], { opacity: 0, duration: 0.35, ease: "power1.in" }, S1 - S0 - 0.75);
+      window.__timelines["s3-tap"] = tl;
+    })();
+  </script>
+</template>

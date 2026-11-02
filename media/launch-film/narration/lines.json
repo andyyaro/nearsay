@@ -1,0 +1,16 @@
+{
+ "v01": "Hold your phone near.",
+ "v02": "Say the task.",
+ "v03": "A coding session starts on your Mac.",
+ "v04": "nearsay. A voice launcher for Claude Code.",
+ "v05": "Tap the sticker, and say what you want done.",
+ "v06": "When you stop talking, the phone sends it to your Mac.",
+ "v07": "Claude Code opens in a terminal, in the right project, with your words as the task.",
+ "v08": "And the same session shows up in the Claude app on your phone, so the lid can stay closed.",
+ "v09": "The words go over SSH, with a key that can start one program, and nothing else.",
+ "v10": "They travel as data, never through a shell.",
+ "v11": "And only the Mac decides the folder, the model and the permissions.",
+ "v12": "Start with a project's name, and the task goes there. Otherwise, it goes to your default project.",
+ "v13": "Three Shortcut actions on the phone. Standard-library Python on the Mac. 111 tests.",
+ "v14": "nearsay. Hold your phone near, and say the task."
+}

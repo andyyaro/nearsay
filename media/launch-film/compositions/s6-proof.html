@@ -1,0 +1,36 @@
+<template>
+  <style>
+    #root { position: absolute; inset: 0; }
+    /* left column (the shut Mac and the phone sit on the right): three numbers, as she says them */
+    #q-kick { position: absolute; left: 96px; top: 150px; opacity: 0; }
+    .st { position: absolute; left: 96px; width: 820px; display: flex; align-items: flex-start; gap: 30px; opacity: 0; }
+    #q1 { top: 232px; } #q2 { top: 434px; } #q3 { top: 636px; }
+    .st .n { flex: none; width: 250px; font-size: 128px; line-height: 132px; font-weight: 700; letter-spacing: -5px; text-align: right; }
+    .st .n.t { color: var(--teal-ink); }
+    .st .l { padding-top: 22px; }
+    .st .l b { display: block; font-size: 38px; line-height: 44px; font-weight: 600; letter-spacing: -0.5px; }
+    .st .l span { display: block; margin-top: 6px; font-size: 25px; line-height: 32px; color: var(--ink-2); }
+    #q-mit { position: absolute; left: 376px; top: 846px; opacity: 0; font-size: 26px; padding: 10px 22px 10px 16px; }
+  </style>
+  <div id="root" data-composition-id="s6-proof" data-width="1920" data-height="1080">
+    <div id="q-kick" class="kicker">Small, and tested</div>
+    <div class="st" id="q1"><div class="n">3</div><div class="l"><b>Shortcut actions on the phone</b><span>Dictate Text, Run Script Over SSH,<br />Show Notification</span></div></div>
+    <div class="st" id="q2"><div class="n">0</div><div class="l"><b>dependencies on the Mac</b><span>standard-library Python 3.9 or newer,<br />nothing installed with pip</span></div></div>
+    <div class="st" id="q3"><div class="n t">111</div><div class="l"><b>tests pass</b><span>SSH tested end to end,<br />against a real OpenSSH server</span></div></div>
+    <div class="chip" id="q-mit"><span class="dot g"></span><span>Open source, MIT</span></div>
+  </div>
+  <script>
+    (function () {
+      const TM = window.TM, C = TM.cues;
+      const S0 = TM.s6[0], S1 = TM.s6[1];
+      const r = (t) => t - S0;
+      const tl = gsap.timeline({ paused: true });
+      tl.fromTo("#q-kick", { opacity: 0, y: 12 }, { opacity: 1, y: 0, duration: 0.5, ease: "power3.out" }, 0.25);
+      [["#q1", C.p_short - 0.55], ["#q2", C.p_python - 0.55], ["#q3", C.p_111 - 0.3]].forEach(([s, t]) =>
+        tl.fromTo(s, { opacity: 0, y: 20 }, { opacity: 1, y: 0, duration: 0.5, ease: "power3.out" }, r(t)));
+      tl.fromTo("#q-mit", { opacity: 0, y: 12 }, { opacity: 1, y: 0, duration: 0.45, ease: "power2.out" }, r(C.p_111) + 0.5);
+      tl.to("#root > *", { opacity: 0, duration: 0.3, ease: "power1.in" }, S1 - S0 - 0.7);
+      window.__timelines["s6-proof"] = tl;
+    })();
+  </script>
+</template>

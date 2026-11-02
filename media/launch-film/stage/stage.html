@@ -1,0 +1,183 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<title>nearsay: 3D stage</title>
+<!-- The film's 3D shots: the MacBook Pro 14 (M5) and iPhone 17 Pro models and the NTAG215 sticker, all in metres.
+     The MacBook is closed, its lid shut, with the sticker on the lid's outer shell: the point is that the Mac never
+     has to be opened. The phone's display shows the real screen recording, frame by frame (assets/screen/pNNNN.jpg).
+     stage/render.py drives it: window.renderFrame(f) poses everything for film frame f (stage/shots.js). -->
+<style>
+  html, body { margin: 0; width: 1920px; height: 1080px; overflow: hidden; }
+  body { background: var(--bg, #fff7e8); }
+  #gl { position: absolute; inset: 0; width: 1920px; height: 1080px; }
+</style>
+<script src="../assets/timing.js"></script>
+<script src="../assets/vo.js"></script>
+<script src="shots.js"></script>
+<script type="importmap">{ "imports": { "three": "./vendor/three.module.js" } }</script>
+</head>
+<body>
+<canvas id="gl" width="1920" height="1080"></canvas>
+<script type="module">
+import * as THREE from 'three';
+import { GLTFLoader } from './vendor/jsm/loaders/GLTFLoader.js';
+import { RoomEnvironment } from './vendor/jsm/environments/RoomEnvironment.js';
+
+const W = 1920, H = 1080;
+const renderer = new THREE.WebGLRenderer({ canvas: document.getElementById('gl'), antialias: true, alpha: true, preserveDrawingBuffer: true });
+renderer.setPixelRatio(1);
+renderer.setSize(W, H, false);
+renderer.outputColorSpace = THREE.SRGBColorSpace;
+renderer.toneMapping = THREE.NeutralToneMapping;
+renderer.toneMappingExposure = 1.0;
+renderer.shadowMap.enabled = true;
+renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+renderer.setClearColor(0x000000, 0);
+
+const scene = new THREE.Scene();
+const pmrem = new THREE.PMREMGenerator(renderer);
+scene.environment = pmrem.fromScene(new RoomEnvironment(), 0.04).texture;
+scene.environmentIntensity = 0.8;
+const camera = new THREE.PerspectiveCamera(30, W / H, 0.004, 20);
+
+// key light from the upper left, a soft shadow on an invisible floor under the Mac
+const key = new THREE.DirectionalLight(0xffffff, 1.7);
+key.position.set(-0.55, 1.1, 0.75);
+key.castShadow = true;
+key.shadow.mapSize.set(4096, 4096);
+key.shadow.camera.left = -0.45; key.shadow.camera.right = 0.45; key.shadow.camera.top = 0.45; key.shadow.camera.bottom = -0.45;
+key.shadow.camera.near = 0.2; key.shadow.camera.far = 3;
+key.shadow.radius = 7; key.shadow.blurSamples = 16; key.shadow.bias = -0.0002; key.shadow.normalBias = 0.002;
+scene.add(key, key.target);
+const rim = new THREE.DirectionalLight(0xfff4e6, 0.8);
+rim.position.set(0.8, 0.45, -0.7);
+scene.add(rim);
+const fill = new THREE.DirectionalLight(0xffffff, 0.5);     // travels with the camera
+scene.add(fill, fill.target);
+const floor = new THREE.Mesh(new THREE.PlaneGeometry(6, 6), new THREE.ShadowMaterial({ opacity: 0.16 }));
+floor.rotation.x = -Math.PI / 2;
+floor.position.y = -0.0095;
+floor.receiveShadow = true;
+scene.add(floor);
+
+// ================================================================ the phone's screen: the recorded frames
+const pcv = document.createElement('canvas'); pcv.width = 603; pcv.height = 1311;
+const pctx = pcv.getContext('2d');
+const phoneTex = new THREE.CanvasTexture(pcv);
+phoneTex.colorSpace = THREE.SRGBColorSpace; phoneTex.flipY = false;
+phoneTex.anisotropy = renderer.capabilities.getMaxAnisotropy();
+const PIMG = new Map();
+function loadPhone(i) {
+  if (!PIMG.has(i)) { const im = new Image(); im.src = `../assets/screen/p${String(i).padStart(4, '0')}.jpg`; PIMG.set(i, im.decode().then(() => im)); }
+  return PIMG.get(i);
+}
+let shownPhone = -1;
+async function showPhone(i) {
+  if (i === shownPhone) return;
+  const im = await loadPhone(i);
+  // the model's screen UVs run right to left: draw the frame mirrored so it reads the right way round
+  pctx.setTransform(-1, 0, 0, 1, 603, 0); pctx.drawImage(im, 0, 0, 603, 1311); pctx.setTransform(1, 0, 0, 1, 0, 0);
+  phoneTex.needsUpdate = true; shownPhone = i;
+  if (PIMG.size > 90) for (const k of [...PIMG.keys()]) if (Math.abs(k - i) > 40) PIMG.delete(k);
+}
+
+// ================================================================ the models
+const loader = new GLTFLoader();
+const mac = new THREE.Group(), phone = new THREE.Group(), phoneInner = new THREE.Group(), sticker = new THREE.Group();
+scene.add(mac, phone); phone.add(phoneInner); mac.add(sticker);
+phoneInner.rotation.set(Math.PI / 2, Math.PI, 0, 'YXZ');   // the upright model -> lying flat, screen up (+Y), top to -Z
+const stickerMat = new THREE.MeshPhysicalMaterial({ color: 0xf3f1ec, roughness: 0.7, clearcoat: 0.15, clearcoatRoughness: 0.6 });
+// the NFC field: thin teal rings that grow out of the sticker when the phone touches it
+const ringMat = new THREE.MeshBasicMaterial({ color: 0x19c7b5, transparent: true, opacity: 0, depthWrite: false, side: THREE.DoubleSide, toneMapped: false });
+const rings = [0, 1].map(() => { const r = new THREE.Mesh(new THREE.RingGeometry(0.955, 1.0, 128), ringMat.clone()); r.rotation.x = -Math.PI / 2; r.renderOrder = 5; mac.add(r); return r; });
+// The model comes open (the lid at 110.74 degrees from the base). Closed: the lid group turns +110.74 degrees about the
+// model's x axis and moves so its back edge meets the base's back edge (model y -11.045) and its display face (the flat
+// part's inner face) sits 0.5 mm over the keys. Measured from the lid shell's own vertices (research/TIMELINE.md).
+const LID = { node: 'RcexTyyhpuJYATQ', angle: 1.93278, pos: [0, -14.497, 10.053] };   // model units (cm)
+const LID_TOP = 0.00812;              // the closed lid's outer shell, scene y (metres)
+const STICKER_AT = [0.104, LID_TOP + 0.0004, 0.066];   // on the lid's outer shell, the front right corner
+const phoneTopBack = new THREE.Vector3(0, -0.0045, -0.0735);   // phone-local point: the back, at the top edge (the NFC antenna)
+
+async function load() {
+  await Promise.all([400, 500, 600, 700].map((w) => new FontFace('Geist', `url(../assets/fonts/Geist-${({ 400: 'Regular', 500: 'Medium', 600: 'SemiBold', 700: 'Bold' })[w]}.woff2)`, { weight: String(w) }).load().then((f) => document.fonts.add(f))));
+  const [mg, pg, sg] = await Promise.all([loader.loadAsync('../assets/models/macbook-pro-14.glb'), loader.loadAsync('../assets/models/iphone-17-pro.glb'),
+                                          loader.loadAsync('../assets/models/ntag215-sticker.glb')]);
+  // ---- the Mac, closed
+  mg.scene.traverse((o) => { if (o.isMesh) { o.castShadow = true; o.receiveShadow = true; } });
+  const lid = mg.scene.getObjectByName(LID.node);
+  if (!lid) throw new Error('no lid node');
+  lid.rotation.x = LID.angle; lid.position.set(...LID.pos);
+  mac.add(mg.scene);
+  // ---- the phone: the OLED gets the recorded screen; the near-black "Glass" layer (a Cycles glass in the source) is hidden
+  pg.scene.traverse((o) => {
+    if (!o.isMesh) return;
+    o.castShadow = true; o.receiveShadow = true;
+    const n = o.material && o.material.name;
+    // the OLED sits in the same plane as the black display frame behind it: pull it forward in depth
+    if (n === 'OLED') { o.material = new THREE.MeshBasicMaterial({ map: phoneTex, toneMapped: false, side: THREE.DoubleSide, polygonOffset: true, polygonOffsetFactor: -2, polygonOffsetUnits: -8 }); o.renderOrder = 2; o.castShadow = false; }
+    if (n === 'Glass') o.visible = false;
+  });
+  phoneInner.add(pg.scene);
+  // ---- the sticker: flat on the palm rest, face up
+  sg.scene.traverse((o) => { if (o.isMesh) { o.geometry.computeVertexNormals(); o.material = stickerMat; o.castShadow = true; o.receiveShadow = true; } });
+  const sb = new THREE.Box3().setFromObject(sg.scene); const size = sb.getSize(new THREE.Vector3()); const ctr = sb.getCenter(new THREE.Vector3());
+  const thin = ['x', 'y', 'z'].reduce((a, b) => (size[a] < size[b] ? a : b));
+  sg.scene.position.sub(ctr);
+  const holder = new THREE.Group(); holder.add(sg.scene);
+  if (thin === 'z') holder.rotation.x = -Math.PI / 2;
+  if (thin === 'x') holder.rotation.z = Math.PI / 2;
+  sticker.add(holder);
+  sticker.position.set(...STICKER_AT);
+  for (const r of rings) r.position.set(STICKER_AT[0], LID_TOP + 0.0011, STICKER_AT[2]);
+  const mb = new THREE.Box3().setFromObject(mac);
+  window.modelInfo = { stickerThin: thin, stickerSize: size.toArray(), macBox: [mb.min.toArray(), mb.max.toArray()] };
+}
+
+// ================================================================ one pose -> one frame
+const V = (a) => new THREE.Vector3(...a);
+function applyPose(p) {
+  document.body.style.setProperty('--bg', p.bg || '#fff7e8');
+  camera.fov = p.cam.fov || 30; camera.updateProjectionMatrix();
+  camera.position.copy(V(p.cam.pos)); camera.lookAt(V(p.cam.target));
+  if (p.cam.roll) camera.rotateZ(p.cam.roll);
+  fill.position.copy(camera.position).add(new THREE.Vector3(0, 0.3, 0)); fill.target.position.copy(V(p.cam.target));
+  fill.intensity = p.fill ?? 0.5;
+  const mp = p.mac || {};
+  mac.visible = mp.visible !== false;
+  mac.position.copy(V(mp.pos || [0, 0, 0])); mac.rotation.set(...(mp.rot || [0, 0, 0]));
+  const ph = p.phone || {};
+  phone.visible = ph.visible !== false;
+  phone.rotation.set(...(ph.rot || [0, 0, 0]), 'YXZ');
+  if (ph.touch) {   // place the phone so its top-back point sits at `touch` (scene coordinates), moved by `lift` [x, y, z]
+    const off = phoneTopBack.clone().applyEuler(phone.rotation);
+    phone.position.copy(V(ph.touch)).sub(off).add(V(ph.lift || [0, 0, 0]));
+  } else phone.position.copy(V(ph.pos || [0, 0.1, 0.1]));
+  sticker.visible = p.sticker !== false;
+  const pu = p.pulse;   // 0..1 progress of the first ring (the second runs 0.25 behind), or null
+  rings.forEach((ring, i) => {
+    const k = pu == null ? null : pu - 0.25 * i;
+    const on = k != null && k > 0 && k < 1;
+    ring.visible = on;
+    if (on) { const e = 1 - Math.pow(1 - k, 2.2); ring.scale.setScalar(0.016 + 0.05 * e); ring.material.opacity = 0.9 * (1 - k) * Math.min(1, k * 6); }
+  });
+  floor.material.opacity = p.shadow ?? 0.16;
+}
+
+window.renderFrame = async (f) => {
+  const t = f / 30;
+  const p = window.SHOT_POSE(t);
+  if (p.pscreen != null) await showPhone(p.pscreen);
+  applyPose(p);
+  renderer.render(scene, camera);
+  return { t, shot: p.shot, pscreen: p.pscreen ?? null };
+};
+window.renderPose = async (p) => {   // for stills while composing
+  if (p.pscreen != null) await showPhone(p.pscreen);
+  applyPose(p); renderer.render(scene, camera); return true;
+};
+
+load().then(() => { window.stageReady = true; }, (e) => { console.error(e); window.stageError = String(e && e.stack || e); });
+</script>
+</body>
+</html>

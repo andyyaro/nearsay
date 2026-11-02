@@ -1,0 +1,31 @@
+<template>
+  <style>
+    #root { position: absolute; inset: 0; background: var(--cream); }
+    /* the lockup on the drop: the repo's own logo (docs/assets: the teal tile and the wordmark), copied to assets/brand */
+    #t-stack { position: absolute; left: 0; right: 0; top: 300px; display: flex; flex-direction: column; align-items: center; }
+    #t-logo { width: 1100px; height: 300px; display: block; opacity: 0; }
+    #t-line { margin-top: 44px; font-size: 50px; line-height: 60px; font-weight: 500; letter-spacing: -0.7px; opacity: 0; }
+    #t-chip { margin-top: 40px; opacity: 0; background: #fff; }
+    #t-chip .ic { color: var(--teal-ink); }
+  </style>
+  <div id="root" data-composition-id="s2-title" data-width="1920" data-height="1080">
+    <div id="t-stack">
+      <img id="t-logo" src="assets/brand/nearsay-logo.svg" alt="nearsay" />
+      <div id="t-line">A voice launcher for Claude Code.</div>
+      <div id="t-chip" class="chip"><svg class="ic"><use href="#ic-mic" /></svg><span>iPhone Shortcuts and your Mac · open source, MIT</span></div>
+    </div>
+  </div>
+  <script>
+    (function () {
+      const TM = window.TM, C = TM.cues, VO = window.VO;
+      const S0 = TM.s2[0], S1 = TM.s2[1];
+      const tl = gsap.timeline({ paused: true });
+      tl.fromTo("#t-logo", { opacity: 0, scale: 0.9 }, { opacity: 1, scale: 1, duration: 0.8, ease: "back.out(1.5)" }, C.mark_title - S0);
+      tl.fromTo("#t-line", { opacity: 0, y: 18 }, { opacity: 1, y: 0, duration: 0.6, ease: "power3.out" }, VO.v04.words[1].t0 - 0.12 - S0);
+      tl.fromTo("#t-chip", { opacity: 0, y: 14 }, { opacity: 1, y: 0, duration: 0.55, ease: "power2.out" }, C.title_line - S0 + 0.45);
+      tl.to("#t-stack", { opacity: 0, duration: 0.3, ease: "power1.in" }, S1 - S0 - 0.75);
+      tl.to("#root", { opacity: 0, duration: 0.01 }, S1 - S0 - 0.4);   // the real tap's shot shows from its bar line
+      window.__timelines["s2-title"] = tl;
+    })();
+  </script>
+</template>

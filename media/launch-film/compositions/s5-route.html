@@ -1,0 +1,87 @@
+<template>
+  <style>
+    #root { position: absolute; inset: 0; background: var(--cream); opacity: 0; }
+    /* three sentences from the README's routing table: what you say, where it goes, what Claude receives */
+    .rw { position: absolute; left: 96px; width: 1728px; height: 150px; }
+    #rw1 { top: 270px; } #rw2 { top: 470px; } #rw3 { top: 670px; }
+    .say { position: absolute; left: 0; top: 0; width: 930px; height: 150px; display: flex; align-items: center; gap: 22px; padding: 0 30px;
+           border-radius: 28px; background: var(--card); opacity: 0; }
+    .say .tile { flex: none; width: 60px; height: 60px; border-radius: 16px; display: flex; align-items: center; justify-content: center; color: #fff; font-size: 32px;
+                 background: linear-gradient(160deg, #e07bdc, #8a5cf6); }
+    .q { font-size: 36px; line-height: 44px; font-weight: 500; letter-spacing: -0.4px; }
+    .q span { opacity: 0; }
+    .q em { font-style: normal; border-radius: 8px; padding: 0 4px; margin: 0 -4px; background: rgba(25, 199, 181, 0); }
+    .arr { position: absolute; left: 960px; top: 72px; width: 70px; height: 4px; background: var(--ink); border-radius: 2px; transform-origin: 0 50%; transform: scaleX(0); }
+    .arr::after { content: ""; position: absolute; right: -4px; top: -7px; border-left: 14px solid var(--ink); border-top: 9px solid transparent; border-bottom: 9px solid transparent; }
+    .to { position: absolute; left: 1064px; top: 0; width: 664px; height: 150px; display: flex; align-items: center; gap: 20px; padding: 0 28px;
+          border-radius: 28px; background: var(--card); border: 3px solid var(--teal); opacity: 0; }
+    .to .tile { flex: none; width: 60px; height: 60px; border-radius: 16px; display: flex; align-items: center; justify-content: center; font-size: 32px;
+                background: var(--teal); color: var(--ink); }
+    .to .p { font-size: 34px; line-height: 40px; font-weight: 700; letter-spacing: -0.4px; }
+    .to .p span { font-size: 24px; font-weight: 500; color: var(--ink-3); letter-spacing: 0; }
+    .to .g { margin-top: 4px; font-size: 23px; line-height: 29px; color: var(--ink-3); }
+    .to .g b { font-weight: 600; color: var(--ink); }
+  </style>
+  <div id="root" data-composition-id="s5-route" data-width="1920" data-height="1080">
+    <div class="topleft" style="max-width: none">
+      <div class="kicker">Routing</div>
+      <div class="head">Start with the project's name.</div>
+    </div>
+    <div class="rw" id="rw1">
+      <div class="say"><div class="tile"><svg class="ic"><use href="#ic-mic" /></svg></div><div class="q" data-hl="orkestra">“In orkestra, add tests for the parser.”</div></div>
+      <div class="arr"></div>
+      <div class="to"><div class="tile"><svg class="ic"><use href="#ic-folder" /></svg></div>
+        <div><div class="p">orkestra</div><div class="g">Claude receives: <b>add tests for the parser.</b></div></div></div>
+    </div>
+    <div class="rw" id="rw2">
+      <div class="say"><div class="tile"><svg class="ic"><use href="#ic-mic" /></svg></div><div class="q">“Summarize what changed today.”</div></div>
+      <div class="arr"></div>
+      <div class="to"><div class="tile"><svg class="ic"><use href="#ic-folder" /></svg></div>
+        <div><div class="p">inbox <span>· your default project</span></div><div class="g">Claude receives: <b>the whole sentence</b></div></div></div>
+    </div>
+    <div class="rw" id="rw3">
+      <div class="say"><div class="tile"><svg class="ic"><use href="#ic-mic" /></svg></div><div class="q" data-hl="orchestra">“Hey Claude, in orchestra add retry logic.”</div></div>
+      <div class="arr"></div>
+      <div class="to"><div class="tile"><svg class="ic"><use href="#ic-folder" /></svg></div>
+        <div><div class="p">orkestra <span>· a sounds-like match</span></div><div class="g">Claude receives: <b>add retry logic.</b></div></div></div>
+    </div>
+  </div>
+  <script>
+    (function () {
+      const TM = window.TM, C = TM.cues, VO = window.VO;
+      const S0 = TM.s5[0], S1 = TM.s5[1];
+      const r = (t) => t - S0;
+      // each sentence types in, character by character; the project's name is wrapped for its highlight
+      document.querySelectorAll("#root .q").forEach((q) => {
+        const text = q.textContent, hl = q.dataset.hl;
+        const a = hl ? text.indexOf(hl) : -1;
+        q.innerHTML = "";
+        let em = null;
+        [...text].forEach((ch, i) => {
+          if (i === a) { em = document.createElement("em"); q.appendChild(em); }
+          const s = document.createElement("span"); s.textContent = ch;
+          (em && i < a + hl.length ? em : q).appendChild(s);
+          if (em && i === a + hl.length - 1) em = null;
+        });
+      });
+      const tl = gsap.timeline({ paused: true });
+      tl.fromTo("#root", { opacity: 0 }, { opacity: 1, duration: 0.25, ease: "none" }, 0);
+      const row = (el, tSay, tName, tTo, typeDur) => {
+        tl.fromTo(el.querySelector(".say"), { opacity: 0, y: 16 }, { opacity: 1, y: 0, duration: 0.4, ease: "power3.out" }, r(tSay) - 0.35);
+        const chars = el.querySelectorAll(".q span");
+        chars.forEach((c, i) => tl.set(c, { opacity: 1 }, r(tSay) + (i / chars.length) * typeDur));
+        if (tName) tl.to(el.querySelector(".q em"), { backgroundColor: "rgba(25, 199, 181, 0.32)", duration: 0.3, ease: "power1.out" }, r(tName));
+        tl.to(el.querySelector(".arr"), { scaleX: 1, duration: 0.3, ease: "power2.out" }, r(tTo) - 0.3);
+        tl.fromTo(el.querySelector(".to"), { opacity: 0, x: -16, scale: 0.98 }, { opacity: 1, x: 0, scale: 1, duration: 0.5, ease: "back.out(1.4)" }, r(tTo));
+      };
+      const rows = document.querySelectorAll("#root .rw");
+      row(rows[0], C.r_start - 0.1, C.r_name, C.r_there, 1.1);
+      row(rows[1], C.r_otherwise - 0.1, null, C.r_default, 0.9);
+      // a third, unspoken, while the music breaks down: a misheard name still finds its project
+      const t3 = VO.v12.end + 0.45;
+      row(rows[2], t3, t3 + 0.7, t3 + 1.5, 1.1);
+      tl.to("#root", { opacity: 0, duration: 0.25, ease: "none" }, S1 - S0 - 0.65);
+      window.__timelines["s5-route"] = tl;
+    })();
+  </script>
+</template>

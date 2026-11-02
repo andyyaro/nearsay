@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>nearsay launch film</title>
+<meta name="description" content="77 seconds on nearsay: hold your iPhone to a sticker on your Mac, say the task, and a Claude Code session starts on the Mac.">
+<meta name="color-scheme" content="dark">
+<meta property="og:title" content="nearsay launch film">
+<meta property="og:description" content="Hold your phone near. Say the task. A coding session starts on your Mac.">
+<meta property="og:image" content="https://andyyaro.github.io/nearsay/film/poster.jpg">
+<meta property="og:type" content="video.other">
+<link rel="icon" href="film/logo.svg" type="image/svg+xml">
+<style>
+  :root { --bg: #06292b; --card: #0b3538; --ink: #fff7e8; --ink2: rgba(255, 247, 232, 0.74); --hair: rgba(255, 247, 232, 0.14); --teal: #19c7b5; --teal-press: #3fd6c6; }
+  * { box-sizing: border-box; }
+  html { background: var(--bg); color: var(--ink); -webkit-text-size-adjust: 100%; }
+  body { margin: 0; font: 17px/1.5 -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; }
+  a { color: var(--teal); }
+  a:focus-visible, video:focus-visible, summary:focus-visible { outline: 3px solid var(--teal); outline-offset: 3px; border-radius: 6px; }
+  .wrap { max-width: 1120px; margin: 0 auto; padding: 24px 16px 56px; }
+  header { display: flex; align-items: center; justify-content: space-between; gap: 16px; margin-bottom: 28px; }
+  header img { display: block; height: 30px; width: auto; }
+  header a.back { font-size: 15px; text-decoration: none; }
+  h1 { font-size: clamp(28px, 4.4vw, 44px); line-height: 1.1; letter-spacing: -0.02em; margin: 0 0 10px; font-weight: 700; }
+  .lede { color: var(--ink2); font-size: clamp(17px, 2vw, 20px); margin: 0 0 24px; max-width: 760px; }
+  .player { border-radius: 18px; overflow: hidden; background: #000; box-shadow: 0 30px 80px rgba(0, 0, 0, 0.45), 0 0 0 1px var(--hair); }
+  video { display: block; width: 100%; height: auto; aspect-ratio: 16 / 9; background: #000; }
+  .actions { display: flex; flex-wrap: wrap; gap: 12px; margin: 24px 0 8px; }
+  .btn { display: inline-flex; align-items: center; min-height: 44px; padding: 0 22px; border-radius: 22px; font-weight: 600; font-size: 17px; text-decoration: none; }
+  .btn.primary { background: var(--teal); color: var(--bg); }
+  .btn.primary:hover { background: var(--teal-press); }
+  .btn.secondary { background: rgba(255, 247, 232, 0.12); color: var(--ink); }
+  .meta { color: var(--ink2); font-size: 15px; margin: 8px 0 0; }
+  details { margin-top: 32px; background: var(--card); border-radius: 14px; padding: 4px 20px; border: 1px solid var(--hair); }
+  summary { cursor: pointer; font-weight: 600; padding: 14px 0; min-height: 44px; }
+  details p { margin: 0 0 12px; }
+  .credits { margin-top: 32px; color: var(--ink2); font-size: 14px; line-height: 1.6; border-top: 1px solid var(--hair); padding-top: 20px; }
+  .credits p { margin: 0 0 8px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <a href="https://github.com/andyyaro/nearsay" aria-label="nearsay on GitHub"><img src="film/logo.svg" alt="nearsay" width="110" height="30"></a>
+    <a class="back" href="https://github.com/andyyaro/nearsay">On GitHub</a>
+  </header>
+  <main>
+    <h1>nearsay, in 77 seconds</h1>
+    <p class="lede">Hold your iPhone to a sticker on your Mac, say the task, and a Claude Code session starts on the Mac, in the right project. One real tap, timed from screen recordings, and how the words get there safely.</p>
+    <div class="player">
+      <video controls playsinline preload="metadata" poster="film/poster.jpg" width="1920" height="1080" aria-label="nearsay launch film, 77 seconds, with narration">
+        <source src="film/nearsay-launch.mp4" type="video/mp4">
+        Your browser cannot play this video. <a href="film/nearsay-launch.mp4">Download the MP4</a>.
+      </video>
+    </div>
+    <div class="actions">
+      <a class="btn primary" href="https://github.com/andyyaro/nearsay#quick-start">Set it up</a>
+      <a class="btn secondary" href="https://github.com/andyyaro/nearsay#how-it-works">How it works</a>
+    </div>
+    <p class="meta">77 seconds, 1920 × 1080, captions in the picture. <a href="film/nearsay-launch.mp4" download>Download the MP4 (26.5 MB)</a> · <a href="film/nearsay-launch.vtt" download>Captions file (WebVTT)</a></p>
+
+    <details>
+      <summary>Transcript</summary>
+      <p>Hold your phone near. Say the task. A coding session starts on your Mac.</p>
+      <p>nearsay. A voice launcher for Claude Code.</p>
+      <p>Tap the sticker, and say what you want done. When you stop talking, the phone sends it to your Mac. Claude Code opens in a terminal, in the right project, with your words as the task. And the same session shows up in the Claude app on your phone, so the lid can stay closed.</p>
+      <p>The words go over SSH, with a key that can start one program, and nothing else. They travel as data, never through a shell. And only the Mac decides the folder, the model and the permissions.</p>
+      <p>Start with a project's name, and the task goes there. Otherwise, it goes to your default project.</p>
+      <p>Three Shortcut actions on the phone. Standard-library Python on the Mac. 111 tests.</p>
+      <p>nearsay. Hold your phone near, and say the task.</p>
+    </details>
+
+    <div class="credits">
+      <p>The phone's screen is a screen recording of one real tap, played in real time. The Mac was recorded with its lid open and is shown shut; its Terminal is redrawn, each line at the second it appeared, with the session link, user name and usage details left out. With the lid shut, the Mac must stay awake.</p>
+      <p>Narration: Kokoro-82M, voice af_heart. Music: "Funky Triplets" by Michael Ramir C. (Mixkit). Sound effects: Mixkit.</p>
+      <p>3D models: <a href="https://sketchfab.com/3d-models/iphone-17-pro-4541aa8a28324b33a2baaf81d263aaec">"iPhone 17 Pro"</a> by Ranguel (<a href="https://creativecommons.org/licenses/by/4.0/">CC BY 4.0</a>) and <a href="https://sketchfab.com/3d-models/macbook-pro-14-inch-m5-652a992f4f244122ae251f9cbb81da1e">"MacBook Pro 14-inch M5"</a> by Apple User, both on Sketchfab, drawn with three.js. <a href="https://github.com/andyyaro/nearsay/tree/main/media/launch-film">How the film was made</a>.</p>
+    </div>
+  </main>
+</div>
+</body>
+</html>

@@ -1,0 +1,30 @@
+<template>
+  <style>
+    #root { position: absolute; inset: 0; }
+    /* the three opening lines, one at a time, bottom left (the closed Mac and the phone sit right of centre: shots.js
+       pans the camera); they are spoken as they show, so the hook has no subtitles. "near" and "Say": the name. */
+    .hl { position: absolute; left: 96px; bottom: 120px; max-width: 900px; font-weight: 700; font-size: 84px; line-height: 90px;
+          letter-spacing: -2.2px; color: var(--ink); opacity: 0; }
+    .hl em { font-style: normal; color: var(--teal-ink); }
+  </style>
+  <div id="root" data-composition-id="s1-hook" data-width="1920" data-height="1080">
+    <div class="hl" id="h1">Hold your phone <em>near</em>.</div>
+    <div class="hl" id="h2"><em>Say</em> the task.</div>
+    <div class="hl" id="h3">A coding session<br />starts on your Mac.</div>
+  </div>
+  <script>
+    (function () {
+      const TM = window.TM, VO = window.VO;
+      const S0 = TM.s1[0], S1 = TM.s1[1];
+      const tl = gsap.timeline({ paused: true });
+      const show = (sel, a, b) => {
+        tl.fromTo(sel, { opacity: 0, y: 26 }, { opacity: 1, y: 0, duration: 0.5, ease: "power3.out" }, a - S0);
+        tl.to(sel, { opacity: 0, y: -14, duration: 0.3, ease: "power1.in" }, b - S0);
+      };
+      show("#h1", VO.v01.start - 0.15, VO.v02.start - 0.45);
+      show("#h2", VO.v02.start - 0.12, VO.v03.start - 0.4);
+      show("#h3", VO.v03.start - 0.1, S1 - 0.55);
+      window.__timelines["s1-hook"] = tl;
+    })();
+  </script>
+</template>

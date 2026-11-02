@@ -1,0 +1,128 @@
+<template>
+  <style>
+    #root { position: absolute; inset: 0; background: var(--cream); opacity: 0; }
+    #bd { position: absolute; left: 0; top: 0; width: 1920px; height: 1080px; transform-origin: 960px 560px; }
+    /* the chain (README, "How it works"): five white cards, left to right */
+    .card { position: absolute; top: 262px; width: 318px; height: 224px; padding: 24px 24px 22px; border-radius: 26px; background: var(--card); opacity: 0;
+            border: 3px solid transparent; }
+    .tile { width: 56px; height: 56px; border-radius: 14px; display: flex; align-items: center; justify-content: center; color: #fff; font-size: 30px; }
+    .tt { margin-top: 16px; font-size: 29px; line-height: 34px; font-weight: 600; letter-spacing: -0.3px; }
+    .ts { margin-top: 4px; font-size: 21px; line-height: 27px; color: var(--ink-3); }
+    #c1 { left: 96px; } #c2 { left: 446px; } #c3 { left: 796px; } #c4 { left: 1146px; } #c5 { left: 1496px; }
+    .wire { position: absolute; top: 358px; width: 26px; height: 3px; background: var(--ink); border-radius: 2px; transform-origin: 0 50%; transform: scaleX(0); }
+    .wire::after { content: ""; position: absolute; right: -3px; top: -5.5px; border-left: 10px solid var(--ink); border-top: 7px solid transparent; border-bottom: 7px solid transparent; }
+    #w1 { left: 418px; } #w2 { left: 768px; } #w3 { left: 1118px; } #w4 { left: 1468px; }
+    .badge { position: absolute; top: 222px; padding: 4px 14px; border-radius: 999px; background: var(--ink); color: #fff; font-size: 19px; line-height: 26px;
+             font-weight: 600; letter-spacing: 0.02em; opacity: 0; white-space: nowrap; }
+    #bSSH { left: 455px; }
+    #bOne { left: 832px; background: var(--teal-ink); }
+
+    /* the words, as data: standard input, a job file, one argument to claude */
+    #trk { position: absolute; left: 605px; top: 516px; width: 1050px; height: 4px; border-radius: 2px; background: var(--line); opacity: 0; }
+    #trk-f { position: absolute; left: 0; top: 0; height: 4px; width: 1050px; border-radius: 2px; background: var(--teal); transform-origin: 0 50%; transform: scaleX(0); }
+    .stop { position: absolute; top: -9px; width: 22px; height: 22px; margin-left: -11px; border-radius: 50%; background: var(--cream); border: 4px solid var(--teal); }
+    .stopl { position: absolute; top: 24px; width: 300px; margin-left: -150px; text-align: center; font-size: 22px; line-height: 28px; font-weight: 500; color: var(--ink-2); }
+    #word { position: absolute; left: 605px; top: 494px; margin-left: -46px; padding: 6px 18px; border-radius: 999px; background: var(--teal); color: var(--ink);
+            font-size: 26px; line-height: 34px; font-weight: 700; opacity: 0; }
+
+    /* bottom row: what the key cannot do; never a shell; what only the Mac decides */
+    .panel { position: absolute; top: 640px; padding: 24px 28px 26px; border-radius: 26px; background: var(--card); opacity: 0; }
+    .ph { font-size: 27px; line-height: 33px; font-weight: 600; }
+    .ps { margin-top: 2px; font-size: 21px; line-height: 27px; color: var(--ink-3); }
+    .li { margin-top: 12px; display: flex; align-items: center; gap: 12px; font-size: 24px; line-height: 30px; font-weight: 500; opacity: 0; }
+    .li .ic { font-size: 26px; }
+    .li .v { margin-left: auto; color: var(--ink-3); font-weight: 400; font-size: 22px; }
+    #pKey { left: 96px; width: 570px; }
+    #pKey .ic { color: var(--red); }
+    #chShell { position: absolute; left: 706px; top: 700px; opacity: 0; background: #fff; font-size: 26px; }
+    #chShell .ic { color: var(--red); }
+    #pMac { left: 1166px; width: 658px; }
+    #pMac .ic { color: var(--teal-ink); }
+  </style>
+  <div id="root" data-composition-id="s4-board" data-width="1920" data-height="1080">
+    <div id="bd">
+      <div class="topleft" style="max-width: none">
+        <div class="kicker">How it works</div>
+        <div class="head">The phone can start one program.</div>
+      </div>
+
+      <div class="card" id="c1"><div class="tile" style="background: var(--teal)"><svg class="ic" style="color: var(--ink)"><use href="#ic-tag" /></svg></div>
+        <div class="tt">NFC sticker</div><div class="ts">on the Mac's lid; the phone touches it</div></div>
+      <div class="wire" id="w1"></div>
+      <div class="card" id="c2"><div class="tile" style="background: linear-gradient(160deg, #e07bdc, #8a5cf6)"><svg class="ic"><use href="#ic-mic" /></svg></div>
+        <div class="tt">Shortcut</div><div class="ts">Dictate Text, then Run Script Over SSH</div></div>
+      <div class="wire" id="w2"></div>
+      <div class="card" id="c3"><div class="tile" style="background: var(--ink)"><svg class="ic"><use href="#ic-lock" /></svg></div>
+        <div class="tt">nearsay-receive</div><div class="ts">the only program the phone's key can run</div></div>
+      <div class="wire" id="w3"></div>
+      <div class="card" id="c4"><div class="tile" style="background: #7b8a8c"><svg class="ic"><use href="#ic-tray" /></svg></div>
+        <div class="tt">Job queue</div><div class="ts">one small file per task</div></div>
+      <div class="wire" id="w4"></div>
+      <div class="card" id="c5"><div class="tile" style="background: var(--claude)"><svg class="ic"><use href="#ic-gearshape" /></svg></div>
+        <div class="tt">nearsay-dispatch</div><div class="ts">opens Terminal and Claude Code, in your desktop session</div></div>
+      <div class="badge" id="bSSH">SSH, from the phone</div>
+      <div class="badge" id="bOne">One program, nothing else</div>
+
+      <div id="trk"><div id="trk-f"></div>
+        <div class="stop" style="left: 0px"></div><div class="stopl" style="left: 0px">dictated words</div>
+        <div class="stop" style="left: 350px"></div><div class="stopl" style="left: 350px">standard input</div>
+        <div class="stop" style="left: 700px"></div><div class="stopl" style="left: 700px">a job file</div>
+        <div class="stop" style="left: 1050px"></div><div class="stopl" style="left: 1050px">one argument to claude</div>
+      </div>
+      <div id="word">“Yo”</div>
+
+      <div class="panel" id="pKey">
+        <div class="ph">The phone's SSH key</div>
+        <div class="ps">written with command = nearsay-receive, restrict</div>
+        <div class="li"><svg class="ic"><use href="#ic-xmark-circle-fill" /></svg><span>No shell</span></div>
+        <div class="li"><svg class="ic"><use href="#ic-xmark-circle-fill" /></svg><span>No terminal</span></div>
+        <div class="li"><svg class="ic"><use href="#ic-xmark-circle-fill" /></svg><span>No port or agent forwarding</span></div>
+      </div>
+      <div class="chip" id="chShell"><svg class="ic"><use href="#ic-xmark-circle-fill" /></svg><span>Never run through a shell</span></div>
+      <div class="panel" id="pMac">
+        <div class="ph">Only the Mac decides</div>
+        <div class="ps">set in nearsay's config on the Mac; the phone cannot change them</div>
+        <div class="li" id="mF"><svg class="ic"><use href="#ic-folder" /></svg><span>Folder</span><span class="v">~/nearsay-inbox</span></div>
+        <div class="li" id="mM"><svg class="ic"><use href="#ic-gearshape" /></svg><span>Model</span><span class="v">your choice, or Claude Code's default</span></div>
+        <div class="li" id="mP"><svg class="ic"><use href="#ic-lock" /></svg><span>Permission mode</span><span class="v">the one you set</span></div>
+      </div>
+    </div>
+  </div>
+  <script>
+    (function () {
+      const TM = window.TM, C = TM.cues;
+      const S0 = TM.s4[0], S1 = TM.s4[1];
+      const r = (t) => t - S0;
+      const tl = gsap.timeline({ paused: true });
+      tl.fromTo("#root", { opacity: 0 }, { opacity: 1, duration: 0.25, ease: "none" }, 0);
+      tl.fromTo("#bd", { scale: 1.03 }, { scale: 1, duration: S1 - S0, ease: "none" }, 0);
+      const pop = (sel, t) => tl.fromTo(sel, { opacity: 0, y: 18, scale: 0.97 }, { opacity: 1, y: 0, scale: 1, duration: 0.5, ease: "back.out(1.4)" }, r(t));
+      const wire = (sel, t) => tl.to(sel, { scaleX: 1, duration: 0.25, ease: "power2.out" }, r(t) - 0.25);
+      // the chain, as she names each link
+      pop("#c1", C.b_sticker);
+      wire("#w1", C.b_ssh - 0.15); pop("#c2", C.b_ssh - 0.15); pop("#bSSH", C.b_ssh + 0.2);
+      wire("#w2", C.b_key - 0.1); pop("#c3", C.b_key - 0.1);
+      pop("#bOne", C.b_one);
+      tl.to("#c3", { borderColor: "#0a7d72", duration: 0.3, ease: "power1.out" }, r(C.b_one));
+      // "...and nothing else": what the key cannot open
+      pop("#pKey", C.b_nothing - 0.2);
+      document.querySelectorAll("#pKey .li").forEach((el, i) =>
+        tl.fromTo(el, { opacity: 0, x: -10 }, { opacity: 1, x: 0, duration: 0.3, ease: "power2.out" }, r(C.b_nothing) + 0.15 + i * 0.22));
+      wire("#w3", C.b_data - 0.5); pop("#c4", C.b_data - 0.5);
+      wire("#w4", C.b_data - 0.25); pop("#c5", C.b_data - 0.25);
+      // "They travel as data": the words go stop to stop
+      tl.fromTo("#trk", { opacity: 0 }, { opacity: 1, duration: 0.3 }, r(C.b_data) - 0.2);
+      tl.fromTo("#word", { opacity: 0, scale: 0.8 }, { opacity: 1, scale: 1, duration: 0.3, ease: "back.out(2)" }, r(C.b_data) - 0.1);
+      tl.to("#word", { x: 1050, duration: 1.6, ease: "power1.inOut" }, r(C.b_data) + 0.25);
+      tl.fromTo("#trk-f", { scaleX: 0 }, { scaleX: 1, duration: 1.6, ease: "power1.inOut" }, r(C.b_data) + 0.25);
+      pop("#chShell", C.b_shell);
+      tl.to("#c3", { borderColor: "rgba(0,0,0,0)", duration: 0.3 }, r(C.b_mac) - 0.3);
+      // "only the Mac decides the folder, the model and the permissions"
+      pop("#pMac", C.b_mac - 0.1);
+      [["#mF", C.b_folder], ["#mM", C.b_model], ["#mP", C.b_perm]].forEach(([s, t]) =>
+        tl.fromTo(s, { opacity: 0, x: -10 }, { opacity: 1, x: 0, duration: 0.3, ease: "power2.out" }, r(t) - 0.1));
+      tl.to("#root", { opacity: 0, duration: 0.25, ease: "none" }, S1 - S0 - 0.4);
+      window.__timelines["s4-board"] = tl;
+    })();
+  </script>
+</template>
