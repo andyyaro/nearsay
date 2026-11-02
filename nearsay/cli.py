@@ -446,7 +446,9 @@ def cmd_uninstall(a, paths: Paths) -> int:
         if ans not in ("y", "yes"):
             _print("Cancelled.")
             return 1
-    if platform.system() == "Darwin":
+    # Same switch as install-agent: launchd labels are per user, not per HOME, so a test or
+    # sandboxed run must not unload the real dispatcher.
+    if platform.system() == "Darwin" and os.environ.get("NEARSAY_SKIP_LAUNCHD") != "1":
         launchagent.unload(default_runner)
     plist = launchagent.plist_path()
     if plist.exists():

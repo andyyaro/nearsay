@@ -203,6 +203,23 @@ class InstallTests(TapTestCase):
         self.assertIn("✓ inbox", r.stdout, r.stderr)
         self.assertEqual(len(list((tap / "queue").glob("*.json"))), 1)
 
+    def test_uninstall_respects_skip_launchd(self):
+        home = self.tmp / "uninstall-home"
+        home.mkdir()
+        self.assertEqual(self.install(home).returncode, 0)
+        spy_dir = self.tmp / "spy-bin"
+        spy_dir.mkdir()
+        spy_log = self.tmp / "launchctl-calls"
+        spy = spy_dir / "launchctl"
+        spy.write_text(f"#!/bin/sh\necho \"$@\" >> '{spy_log}'\n")
+        spy.chmod(0o755)
+        env = dict(os.environ, HOME=str(home), NEARSAY_SKIP_LAUNCHD="1", PATH=f"{spy_dir}:/usr/bin:/bin")
+        cp = run([str(home / ".nearsay" / "bin" / "nearsay"), "uninstall", "--yes"], env=env)
+        self.assertEqual(cp.returncode, 0, cp.stdout + cp.stderr)
+        self.assertFalse(spy_log.exists(), "uninstall called launchctl despite NEARSAY_SKIP_LAUNCHD=1")
+        self.assertFalse((home / "Library" / "LaunchAgents" / "com.nearsay.dispatch.plist").exists())
+        self.assertFalse((home / ".local" / "bin" / "nearsay").exists())
+
     def test_refuses_spaces_in_install_folder(self):
         home = self.tmp / "h"
         home.mkdir()

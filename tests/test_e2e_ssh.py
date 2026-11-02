@@ -86,7 +86,12 @@ class SshEndToEnd(unittest.TestCase):
             "PermitRootLogin prohibit-password", "StrictModes no", "UsePAM no", "LogLevel VERBOSE",
             "AllowTcpForwarding yes", "PermitTTY yes",  # server would allow these; the key's `restrict` must block them
         ]) + "\n")
-        Path("/run/sshd").mkdir(parents=True, exist_ok=True)
+        if sys.platform.startswith("linux"):
+            # Debian/Ubuntu sshd wants its privilege-separation directory; macOS has no /run.
+            try:
+                Path("/run/sshd").mkdir(parents=True, exist_ok=True)
+            except OSError:
+                pass
         cls.sshd_log = open(cls.tmp / "sshd.log", "w")
         cls.sshd = subprocess.Popen([SSHD, "-D", "-e", "-f", str(cfgfile)], stdout=cls.sshd_log, stderr=subprocess.STDOUT)
         deadline = time.time() + 10
