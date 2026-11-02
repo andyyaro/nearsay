@@ -230,6 +230,15 @@ see **[SECURITY.md](SECURITY.md)**.
 - The phone cannot change which folder, permission mode, model or program is used; only the config file on the Mac decides.
 - Someone holding your **unlocked** phone can start Claude sessions in your configured projects with the permission mode you chose. Keep `permission_mode` at `default` (Claude asks before acting) or `acceptEdits`, or use `review` mode, for anything important.
 
+## Troubleshooting
+
+`nearsay doctor` catches most problems. The full symptom → fix list is in
+**[docs/TROUBLESHOOTING.md](docs/TROUBLESHOOTING.md)**. The common ones:
+
+- **Phone says it could not connect:** Remote Login is off, the Mac is asleep, the phone is on another network, or Shortcuts was refused *Local Network* access (iPhone Settings → Privacy & Security → Local Network → Shortcuts).
+- **Phone shows ✓ but nothing opens:** run `nearsay log`; if the task is still waiting, the dispatcher agent is not running (`nearsay doctor`, and check Login Items & Extensions → Allow in the Background).
+- **Sticker does nothing:** use an on-metal sticker on the MacBook, keep the phone unlocked, and touch with the top edge of the phone.
+
 ## Verification
 
 ```bash
@@ -259,6 +268,7 @@ CI runs the same suite on macOS, with Apple's system Python and a current one, o
 3. **Tap-to-terminal time on a real phone is not measured.** The numbers above are the Mac side only, from the test suite.
 4. **macOS only on the computer side.** The receiver, router and queue are portable Python; the launcher (Terminal, `open`, `launchd`) is macOS-specific.
 5. **A MacBook needs an on-metal sticker.** Ordinary NFC stickers do not read through an aluminum case.
+6. **The Mac has to be awake.** A sleeping Mac, such as a MacBook with its lid closed, cannot take the connection, and the phone shows "could not connect". A MacBook in closed-display mode (external display, keyboard and power) stays awake and works normally; otherwise keep the lid open, or keep the Mac from sleeping while it is plugged in.
 
 ## Why it is built this way
 
@@ -313,7 +323,7 @@ the phone. Your project folders are never touched.
 ## Project status
 
 Version 1.0.0. First released as **tapclaude** in October 2026 and renamed **nearsay** in
-November 2026. If you installed it under the old name,
+November 2026. Tested end to end from a real iPhone to a real Mac. If you installed it under the old name,
 [CHANGELOG.md](CHANGELOG.md#moving-from-tapclaude) shows how to move over; the Shortcut on your
 phone does not change.
 
