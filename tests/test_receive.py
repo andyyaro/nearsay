@@ -1,7 +1,10 @@
 import io
 import json
+import os
+import subprocess
+import sys
 
-from helpers import TapTestCase
+from helpers import ROOT, TapTestCase
 
 from nearsay import jobs, receive
 
@@ -17,6 +20,40 @@ class ReceiveTests(TapTestCase):
 
     def queued(self):
         return [json.loads(p.read_text(encoding="utf-8")) for p in jobs.list_queue(self.paths)]
+
+    def log_events(self):
+        path = self.paths.logs / "receive.log"
+        if not path.exists():
+            return []
+        return [json.loads(line) for line in path.read_text(encoding="utf-8").splitlines()]
+
+    def test_phone_hanging_up_before_the_reply_is_not_a_crash(self):
+        class HungUp(io.StringIO):
+            def flush(self):
+                raise BrokenPipeError(32, "Broken pipe")
+
+        e = {"SSH_ORIGINAL_COMMAND": "tap", "SSH_CONNECTION": "192.168.1.23 51234 192.168.1.10 22"}
+        code = receive.run(io.BytesIO(b"In inbox, tidy the notes"), e, HungUp(), paths=self.paths)
+        self.assertEqual(code, 0)
+        self.assertEqual([j["task"] for j in self.queued()], ["tidy the notes"])  # the task still runs
+        gone = self.log_events()[-1]
+        self.assertEqual((gone["event"], gone["client"]), ("client_gone", "192.168.1.23"))
+        self.assertTrue(gone["reply"].startswith("✓ inbox"), gone)
+
+    def test_entry_point_exits_cleanly_when_the_pipe_is_closed(self):
+        # The real failure: sshd's end of stdout is gone by the time the receiver answers.
+        env = dict(os.environ, NEARSAY_HOME=str(self.paths.root), SSH_ORIGINAL_COMMAND="tap")
+        code = "import sys; sys.path.insert(0, sys.argv[1]); from nearsay import receive; sys.exit(receive.main())"
+        proc = subprocess.Popen([sys.executable, "-I", "-c", code, str(ROOT)], env=env, stdin=subprocess.PIPE,
+                                stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        proc.stdout.close()  # hang up first; the receiver only answers after stdin closes
+        proc.stdin.close()   # nothing was said
+        err = proc.stderr.read().decode()
+        proc.stderr.close()
+        self.assertEqual(proc.wait(timeout=30), 0, err)
+        self.assertEqual(err, "")
+        self.assertEqual([ev["event"] for ev in self.log_events()], ["client_gone"])
+        self.assertIn("Nothing was heard", self.log_events()[0]["reply"])
 
     def test_happy_path_with_sticker(self):
         code, msg = self.send("add tests for the parser", hint="tap desk")

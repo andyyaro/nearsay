@@ -3,7 +3,7 @@
 ## Unreleased - Renamed to nearsay (November 2026)
 
 The project is now **nearsay**. Nothing about how it works has changed: the phone still sends
-`tap`, the key is still locked to the receiver, and the whole suite passes: 109 tests, the original 108 plus one for a fix below.
+`tap`, the key is still locked to the receiver, and the whole suite passes: 111 tests, the original 108 plus three for the fixes below.
 
 ### Changed
 - **The name, everywhere.** The command is `nearsay` (was `tapclaude`); the install folder is
@@ -29,6 +29,11 @@ The project is now **nearsay**. Nothing about how it works has changed: the phon
 - **`nearsay uninstall` honours `NEARSAY_SKIP_LAUNCHD=1`**, as `install-agent` already did. A
   LaunchAgent label belongs to the user, not to a `HOME` folder, so an uninstall run in a test or
   a sandbox could unload the real dispatcher. A test now holds this.
+- **The phone hanging up before the reply is no longer logged as a crash.** If the Shortcut was
+  stopped or the connection dropped while the Mac was answering, the receiver logged
+  `crash: BrokenPipeError` and exited with code 120. It now logs `client_gone` with the reply
+  the phone missed, so the log says what happened, and exits cleanly. A task that was already
+  queued still runs. Two tests hold this, one through a real closed pipe.
 
 ### Moving from tapclaude
 

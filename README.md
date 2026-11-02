@@ -242,7 +242,7 @@ see **[SECURITY.md](SECURITY.md)**.
 ## Verification
 
 ```bash
-./run_tests.sh                       # 109 tests, about 15 s; uses python3
+./run_tests.sh                       # 111 tests, about 15 s; uses python3
 PYTHON=/usr/bin/python3 ./run_tests.sh
 ```
 
@@ -307,7 +307,7 @@ run an SSH command with standard input on an NFC tag will work with the same key
 | [`nearsay/keys.py`](nearsay/keys.py) · [`launchagent.py`](nearsay/launchagent.py) | The restricted `authorized_keys` line; the LaunchAgent file |
 | [`nearsay/cli.py`](nearsay/cli.py) · [`doctor.py`](nearsay/doctor.py) · [`config.py`](nearsay/config.py) | The `nearsay` command, its checkup and the validated config |
 | [`install.sh`](install.sh) | The installer (copies to `~/.nearsay`, writes the wrappers, loads the agent) |
-| [`tests/`](tests/) | The 109-test suite, including the end-to-end SSH run |
+| [`tests/`](tests/) | The 111-test suite, including the end-to-end SSH run |
 | [`docs/`](docs/) | [iPhone setup](docs/IPHONE.md), [threat model](docs/THREAT_MODEL.md), [troubleshooting](docs/TROUBLESHOOTING.md) |
 | [`docs/assets/brand/`](docs/assets/brand/) | The nearsay logo, light and dark |
 

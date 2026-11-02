@@ -136,8 +136,14 @@ def run(stdin: IO[bytes], env: Mapping[str, str], out: IO[str], paths: Optional[
     log_path = paths.logs / "receive.log"
 
     def say(line: str) -> int:
-        out.write(line + "\n")
-        out.flush()
+        # The phone can hang up before the reply arrives (the Shortcut was stopped, or the
+        # network dropped). That is not a failure on the Mac: anything already queued still
+        # runs. Record which reply was lost so the log shows what the phone missed.
+        try:
+            out.write(line + "\n")
+            out.flush()
+        except (BrokenPipeError, ConnectionResetError):
+            log(log_path, "client_gone", client=_client(env), reply=preview(line, 80))
         return 0
 
     try:
@@ -205,17 +211,33 @@ def run(stdin: IO[bytes], env: Mapping[str, str], out: IO[str], paths: Optional[
     return say(line)
 
 
+def _release_stdout() -> None:
+    """If the phone hung up, the unsent reply is still in Python's buffer and the exit-time
+    flush would fail again (exit code 120 and a warning on stderr). Send it to /dev/null."""
+    try:
+        sys.stdout.flush()
+    except OSError:
+        devnull = os.open(os.devnull, os.O_WRONLY)
+        os.dup2(devnull, sys.stdout.fileno())
+        os.close(devnull)
+
+
 def main(argv: Optional[List[str]] = None) -> int:
     try:
-        return run(sys.stdin.buffer, os.environ, sys.stdout)
+        code = run(sys.stdin.buffer, os.environ, sys.stdout)
     except Exception as e:  # last-resort message the phone can show
         try:
             log(default_paths().logs / "receive.log", "crash", error=repr(e))
         except Exception:
             pass
-        sys.stdout.write(f"{FAIL} nearsay hit an internal error on the Mac: {type(e).__name__}. "
-                         "See ~/.nearsay/logs/receive.log\n")
-        return 1
+        try:
+            sys.stdout.write(f"{FAIL} nearsay hit an internal error on the Mac: {type(e).__name__}. "
+                             "See ~/.nearsay/logs/receive.log\n")
+        except OSError:
+            pass
+        code = 1
+    _release_stdout()
+    return code
 
 
 if __name__ == "__main__":
