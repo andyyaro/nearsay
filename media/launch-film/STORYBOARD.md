@@ -74,13 +74,14 @@ the same timing (`window.TM`, `window.VO`), so a re-voiced line re-times the pic
 ## The README preview
 
 `docs/assets/readme/nearsay-in-action.webp` is the real-tap scene, 15.2–31.2 s of the film, at
-1200 px and 15 fps. The light denoise and the keyframe every 6–12 frames keep lossy WebP from
-turning the film's grain on the dark lid and Terminal into blocks.
+1200 px and 15 fps, 4.6 MB. The light denoise, a keyframe every 6–12 frames and quality 90 keep
+lossy WebP from turning the film's grain on the dark lid and Terminal into blocks, above all
+while the camera moves.
 
 ```sh
 mkdir -p preview
 ffmpeg -ss 15.2 -i renders/nearsay-v1.mp4 -t 16 \
   -vf "fps=15,hqdn3d=3:2:4:3,scale=1200:-2:flags=lanczos" preview/p%03d.png
-img2webp -loop 0 -kmax 12 -kmin 6 -lossy -q 80 -m 4 -d 67 -mixed -exact preview/p*.png \
+img2webp -loop 0 -kmax 12 -kmin 6 -lossy -q 90 -m 6 -d 67 -mixed -exact preview/p*.png \
   -o ../../docs/assets/readme/nearsay-in-action.webp
 ```
