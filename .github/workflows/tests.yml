@@ -1,0 +1,51 @@
+name: tests
+
+# nearsay is a Mac tool, so its suite runs on macOS: the launcher's generated scripts are
+# executed with zsh, install.sh is the real installer, and the end-to-end test starts Apple's own
+# sshd with the restricted key. Two interpreters: Apple's system Python (what installed Macs run,
+# 3.9) and a current one.
+
+on:
+  push:
+    branches: ["main"]
+  pull_request:
+  workflow_dispatch:
+
+# A newer push to the same pull request makes the older run's answer irrelevant.
+concurrency:
+  group: tests-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    name: Test suite (macOS, ${{ matrix.python }} Python)
+    runs-on: macos-latest
+    # The SSH test starts a real server; a hang must not burn the runner allowance.
+    timeout-minutes: 15
+    strategy:
+      fail-fast: false
+      matrix:
+        python: ["system", "3.13"]
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v7
+
+      - name: Set up Python
+        if: matrix.python != 'system'
+        uses: actions/setup-python@v6
+        with:
+          python-version: ${{ matrix.python }}
+
+      - name: Choose the interpreter
+        env:
+          WHICH: ${{ matrix.python }}
+        run: |
+          if [ "$WHICH" = "system" ]; then py=/usr/bin/python3; else py="$(command -v python)"; fi
+          echo "PYTHON=$py" >> "$GITHUB_ENV"
+          "$py" --version
+
+      - name: Run the suite (includes the end-to-end test through a real sshd)
+        run: ./run_tests.sh -v
