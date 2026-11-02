@@ -1,0 +1,29 @@
+{
+  "version": 1,
+  "default_project": "inbox",
+  "mode": "run",
+  "terminal": "Terminal",
+  "terminal_command": null,
+  "claude_path": "/Users/you/.local/bin/claude",
+  "permission_mode": "default",
+  "model": null,
+  "remote_control": true,
+  "worktree": false,
+  "keep_shell": true,
+  "notify": true,
+  "speak": false,
+  "linger_seconds": 15,
+  "max_task_chars": 4000,
+  "dedupe_seconds": 20,
+  "keep_jobs": 200,
+  "fuzzy_threshold": 0.84,
+  "path_env": "/Users/you/.local/bin:/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin",
+  "projects": {
+    "inbox": { "path": "~/tapclaude-inbox", "aliases": ["inbox", "scratch"] },
+    "orkestra": { "path": "~/code/orkestra", "aliases": ["orchestra", "orchestra runtime"] },
+    "provalume": { "path": "~/code/provalume", "aliases": ["prova loom"], "permission_mode": "acceptEdits" },
+    "ev-model": { "path": "~/code/ev-charging-model", "aliases": ["ev model", "charge ready"], "mode": "review" },
+    "olympus": { "path": "~/code/olympus", "worktree": true, "model": "opus" }
+  },
+  "stickers": { "desk": "orkestra", "lab": "provalume" }
+}
