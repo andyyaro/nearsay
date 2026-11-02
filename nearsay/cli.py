@@ -1,4 +1,4 @@
-"""The ``tapclaude`` command."""
+"""The ``nearsay`` command."""
 
 from __future__ import annotations
 
@@ -65,7 +65,7 @@ def _load_raw_or_default(paths: Paths) -> dict:
     try:
         return load_raw(paths.config)
     except ConfigMissing:
-        raise SystemExit(_err("No config yet. Run: tapclaude init"))
+        raise SystemExit(_err("No config yet. Run: nearsay init"))
 
 
 def _save(paths: Paths, raw: dict) -> int:
@@ -117,7 +117,7 @@ def cmd_init(a, paths: Paths) -> int:
         _print(f"✓ Config already exists: {paths.config} (use --force to start over)")
         return 0
     raw = default_raw()
-    inbox = Path(os.path.expanduser(a.default_path or "~/tapclaude-inbox")).absolute()
+    inbox = Path(os.path.expanduser(a.default_path or "~/nearsay-inbox")).absolute()
     raw["projects"] = {"inbox": {"path": _short_home(inbox), "aliases": ["inbox", "scratch"]}}
     if a.terminal:
         raw["terminal"] = a.terminal
@@ -130,8 +130,8 @@ def cmd_init(a, paths: Paths) -> int:
     if not inbox.exists():
         inbox.mkdir(parents=True)
         (inbox / "README.md").write_text(
-            "# tapclaude inbox\n\nTasks you speak without naming a project start here.\n"
-            "Add real projects with `tapclaude project add <name> <path>`.\n", encoding="utf-8")
+            "# nearsay inbox\n\nTasks you speak without naming a project start here.\n"
+            "Add real projects with `nearsay project add <name> <path>`.\n", encoding="utf-8")
     _print(f"✓ Wrote {paths.config}")
     _print(f"✓ Default project 'inbox' → {inbox}")
     return 0
@@ -192,7 +192,7 @@ def cmd_project(a, paths: Paths) -> int:
         if name not in projects:
             return _err(f"No project named {name!r}.")
         if raw.get("default_project", "inbox") == name:
-            return _err("That is the default project. Pick another first: tapclaude project default <name>")
+            return _err("That is the default project. Pick another first: nearsay project default <name>")
         projects.pop(name)
         raw["stickers"] = {s: t for s, t in raw.get("stickers", {}).items() if t != name}
         if _save(paths, raw):
@@ -213,7 +213,7 @@ def cmd_sticker(a, paths: Paths) -> int:
     stickers = raw.setdefault("stickers", {})
     if a.action == "list":
         if not stickers:
-            _print("No named stickers. Any sticker works; name one with: tapclaude sticker add desk <project>")
+            _print("No named stickers. Any sticker works; name one with: nearsay sticker add desk <project>")
         for s, t in sorted(stickers.items()):
             _print(f"{s:<16} → {t}")
         return 0
@@ -222,7 +222,7 @@ def cmd_sticker(a, paths: Paths) -> int:
         if _save(paths, raw):
             return 1
         _print(f"✓ Sticker {a.name.lower()} → {a.project.lower()}. Put \"tap {a.name.lower()}\" in that "
-               "sticker's Shortcut Script field (see: tapclaude phone).")
+               "sticker's Shortcut Script field (see: nearsay phone).")
         return 0
     if a.action == "remove":
         if stickers.pop(a.name.lower(), None) is None:
@@ -243,7 +243,7 @@ def cmd_set(a, paths: Paths) -> int:
         return 1
     _print(f"✓ {a.key} = {json.dumps(raw[a.key])}")
     if a.key in ("path_env", "claude_path"):
-        _print("  Re-run ./install.sh (or tapclaude install-agent) so the dispatcher picks up the new PATH.")
+        _print("  Re-run ./install.sh (or nearsay install-agent) so the dispatcher picks up the new PATH.")
     return 0
 
 
@@ -268,7 +268,7 @@ def cmd_add_key(a, paths: Paths, home: Optional[Path] = None) -> int:
     elif not sys.stdin.isatty():
         text = sys.stdin.read()
     else:
-        return _err("Give the key: tapclaude add-key --from-clipboard   (or paste it after add-key)")
+        return _err("Give the key: nearsay add-key --from-clipboard   (or paste it after add-key)")
     ak = (home or Path.home()) / ".ssh" / "authorized_keys"
     try:
         pk = keys.parse_public_key(text)
@@ -278,7 +278,7 @@ def cmd_add_key(a, paths: Paths, home: Optional[Path] = None) -> int:
     for w in warnings:
         _print(f"⚠ {w}")
     _print(f"✓ Added {pk.type} key as {a.label!r} to {ak}")
-    _print("  This key can only queue tasks for tapclaude: no shell, no forwarding, no terminal.")
+    _print("  This key can only queue tasks for nearsay: no shell, no forwarding, no terminal.")
     if a.allow_from:
         _print(f"  Accepted only from: {', '.join(keys.validate_sources(a.allow_from))}")
     return 0
@@ -287,7 +287,7 @@ def cmd_add_key(a, paths: Paths, home: Optional[Path] = None) -> int:
 def cmd_remove_key(a, paths: Paths, home: Optional[Path] = None) -> int:
     ak = (home or Path.home()) / ".ssh" / "authorized_keys"
     n = keys.remove_keys(ak, a.label)
-    _print(f"✓ Removed {n} tapclaude key line(s)" + (f" labelled {a.label!r}" if a.label else ""))
+    _print(f"✓ Removed {n} nearsay key line(s)" + (f" labelled {a.label!r}" if a.label else ""))
     return 0
 
 
@@ -295,7 +295,7 @@ def cmd_keys(a, paths: Paths, home: Optional[Path] = None) -> int:
     ak = (home or Path.home()) / ".ssh" / "authorized_keys"
     entries = keys.list_keys(ak)
     if not entries:
-        _print("No tapclaude keys. Add one: tapclaude add-key --from-clipboard")
+        _print("No nearsay keys. Add one: nearsay add-key --from-clipboard")
     for label, ktype, tail in entries:
         _print(f"{label:<12} {ktype:<22} …{tail}")
     return 0
@@ -328,7 +328,7 @@ def cmd_test(a, paths: Paths) -> int:
         q = paths.queue / f"{job.id}.json"
         d = jobs.claim(paths, q)
         if d:
-            jobs.write_status(d, "skipped", "tapclaude test --no-launch")
+            jobs.write_status(d, "skipped", "nearsay test --no-launch")
         _print("Not launched (--no-launch).")
         return 0
     if a.now or platform.system() != "Darwin" or not launchagent.is_loaded(default_runner):
@@ -341,7 +341,7 @@ def cmd_test(a, paths: Paths) -> int:
             _print(f"Mac result: {mark} {st['status']}: {st.get('detail', '')}")
             return 0 if st["status"] == "launched" else 1
         time.sleep(0.3)
-    return _err("No result after 15 s. Is the dispatcher agent loaded? Run: tapclaude doctor")
+    return _err("No result after 15 s. Is the dispatcher agent loaded? Run: nearsay doctor")
 
 
 def cmd_log(a, paths: Paths) -> int:
@@ -365,7 +365,7 @@ def cmd_log(a, paths: Paths) -> int:
 def cmd_show(a, paths: Paths) -> int:
     matches = [d for d in jobs.job_dirs(paths) if d.name.startswith(a.id) or d.name.endswith(a.id)]
     if not matches:
-        return _err(f"No job matching {a.id!r}. See: tapclaude log")
+        return _err(f"No job matching {a.id!r}. See: nearsay log")
     d = matches[-1]
     job = jobs.read_job(d)
     _print(json.dumps({"job": job.__dict__ if job else None, "status": jobs.read_status(d), "folder": str(d)},
@@ -430,7 +430,7 @@ def cmd_install_agent(a, paths: Paths) -> int:
     plist = launchagent.plist_path()
     launchagent.write(plist, launchagent.build(paths, path_env))
     _print(f"✓ Wrote {plist}")
-    if os.environ.get("TAPCLAUDE_SKIP_LAUNCHD") == "1" or platform.system() != "Darwin":
+    if os.environ.get("NEARSAY_SKIP_LAUNCHD") == "1" or platform.system() != "Darwin":
         _print("  (launchd step skipped)")
         return 0
     cp = launchagent.load(default_runner, plist)
@@ -442,7 +442,7 @@ def cmd_install_agent(a, paths: Paths) -> int:
 
 def cmd_uninstall(a, paths: Paths) -> int:
     if not a.yes:
-        ans = input("Remove the tapclaude agent and phone key? [y/N] ").strip().lower()
+        ans = input("Remove the nearsay agent and phone key? [y/N] ").strip().lower()
         if ans not in ("y", "yes"):
             _print("Cancelled.")
             return 1
@@ -454,7 +454,7 @@ def cmd_uninstall(a, paths: Paths) -> int:
         _print(f"✓ Removed {plist}")
     n = keys.remove_keys(Path.home() / ".ssh" / "authorized_keys")
     _print(f"✓ Removed {n} phone key line(s) from ~/.ssh/authorized_keys")
-    link = Path.home() / ".local" / "bin" / "tapclaude"
+    link = Path.home() / ".local" / "bin" / "nearsay"
     if link.is_symlink() and os.path.realpath(link) == os.path.realpath(paths.cli_cmd):
         link.unlink()
         _print(f"✓ Removed {link}")
@@ -477,13 +477,13 @@ def cmd_doctor(a, paths: Paths) -> int:
 # ---------------------------------------------------------------- parser
 
 def build_parser() -> argparse.ArgumentParser:
-    p = argparse.ArgumentParser(prog="tapclaude",
+    p = argparse.ArgumentParser(prog="nearsay",
                                 description="Tap an NFC sticker, speak a task, start Claude Code on this Mac.")
-    p.add_argument("--version", action="version", version=f"tapclaude {__version__}")
+    p.add_argument("--version", action="version", version=f"nearsay {__version__}")
     sub = p.add_subparsers(dest="cmd", metavar="command")
 
     s = sub.add_parser("init", help="create the config and the default 'inbox' project")
-    s.add_argument("--default-path", help="folder for the default project (default ~/tapclaude-inbox)")
+    s.add_argument("--default-path", help="folder for the default project (default ~/nearsay-inbox)")
     s.add_argument("--terminal", choices=TERMINALS)
     s.add_argument("--claude-path", help="absolute path to claude")
     s.add_argument("--force", action="store_true", help="overwrite an existing config")
@@ -518,23 +518,23 @@ def build_parser() -> argparse.ArgumentParser:
     sr = ss.add_parser("remove")
     sr.add_argument("name")
 
-    s = sub.add_parser("set", help="change a setting (see: tapclaude set --help)",
+    s = sub.add_parser("set", help="change a setting (see: nearsay set --help)",
                        epilog="\n".join(f"  {k:<16} {v}" for k, v in SETTABLE.items()),
                        formatter_class=argparse.RawDescriptionHelpFormatter)
     s.add_argument("key")
     s.add_argument("value")
     sub.add_parser("config", help="print the current config")
 
-    s = sub.add_parser("add-key", help="authorize the iPhone's public key (restricted to tapclaude)")
+    s = sub.add_parser("add-key", help="authorize the iPhone's public key (restricted to nearsay)")
     s.add_argument("key", nargs="*", help="the public key line (or use --from-clipboard)")
     s.add_argument("--from-clipboard", action="store_true", help="read the key from the clipboard (pbpaste)")
     s.add_argument("--label", default="iphone", help="name for this device (default: iphone)")
     s.add_argument("--allow-from", action="append", metavar="CIDR",
                    help="only accept this key from these addresses, e.g. 192.168.1.0/24 (repeatable)")
     s.add_argument("--force", action="store_true", help="replace an unrestricted line holding the same key")
-    s = sub.add_parser("remove-key", help="remove tapclaude key lines")
+    s = sub.add_parser("remove-key", help="remove nearsay key lines")
     s.add_argument("--label")
-    sub.add_parser("keys", help="list authorized tapclaude keys")
+    sub.add_parser("keys", help="list authorized nearsay keys")
 
     s = sub.add_parser("route", help="show which project a sentence would go to (nothing is launched)")
     s.add_argument("text")
@@ -554,7 +554,7 @@ def build_parser() -> argparse.ArgumentParser:
     sub.add_parser("phone", help="print the values to type into the iPhone Shortcut")
     sub.add_parser("install-agent", help="(re)write and load the launchd dispatcher agent")
     s = sub.add_parser("uninstall", help="remove the agent and phone key")
-    s.add_argument("--purge", action="store_true", help="also delete ~/.tapclaude")
+    s.add_argument("--purge", action="store_true", help="also delete ~/.nearsay")
     s.add_argument("--yes", action="store_true")
     sub.add_parser("receive", help=argparse.SUPPRESS)
     sub.add_parser("dispatch", help=argparse.SUPPRESS)
@@ -583,7 +583,7 @@ def main(argv: Optional[List[str]] = None) -> int:
     try:
         return handlers[a.cmd](a, paths)
     except ConfigMissing:
-        return _err("No config yet. Run: tapclaude init")
+        return _err("No config yet. Run: nearsay init")
     except ConfigError as e:
         for prob in e.problems:
             _err(prob)

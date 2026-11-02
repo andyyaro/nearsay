@@ -1,4 +1,4 @@
-"""Shared fixtures: a throwaway tapclaude home with a few projects."""
+"""Shared fixtures: a throwaway nearsay home with a few projects."""
 
 from __future__ import annotations
 
@@ -16,14 +16,14 @@ from typing import Any, Dict, List, Optional
 ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT))
 
-from tapclaude import config as config_mod  # noqa: E402
-from tapclaude.paths import Paths  # noqa: E402
+from nearsay import config as config_mod  # noqa: E402
+from nearsay.paths import Paths  # noqa: E402
 
 FAKE_CLAUDE = """#!{python}
 import json, os, sys
 with open(os.environ["FAKE_CLAUDE_LOG"], "a", encoding="utf-8") as f:
     f.write(json.dumps({{"argv": sys.argv[1:], "cwd": os.getcwd(),
-                        "job": os.environ.get("TAPCLAUDE_JOB_ID")}}) + "\\n")
+                        "job": os.environ.get("NEARSAY_JOB_ID")}}) + "\\n")
 sys.exit(int(os.environ.get("FAKE_CLAUDE_EXIT", "0")))
 """
 
@@ -54,9 +54,9 @@ class TapTestCase(unittest.TestCase):
     maxDiff = None
 
     def setUp(self) -> None:
-        self.tmp = Path(tempfile.mkdtemp(prefix="tapclaude-test-"))
+        self.tmp = Path(tempfile.mkdtemp(prefix="nearsay-test-"))
         self.addCleanup(shutil.rmtree, self.tmp, True)
-        self.paths = Paths(self.tmp / "home" / ".tapclaude")
+        self.paths = Paths(self.tmp / "home" / ".nearsay")
         self.paths.ensure()
         self.raw = base_raw(self.tmp)
         for p in self.raw["projects"].values():

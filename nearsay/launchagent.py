@@ -15,7 +15,7 @@ from typing import Callable, Dict, Optional, Sequence
 
 from .paths import Paths
 
-LABEL = "com.tapclaude.dispatch"
+LABEL = "com.nearsay.dispatch"
 
 Runner = Callable[..., "subprocess.CompletedProcess[str]"]
 
@@ -33,7 +33,7 @@ def build(paths: Paths, path_env: str) -> Dict:
         "ProcessType": "Interactive",
         "StandardOutPath": str(paths.logs / "launchd.out.log"),
         "StandardErrorPath": str(paths.logs / "launchd.err.log"),
-        "EnvironmentVariables": {"PATH": path_env, "TAPCLAUDE_HOME": str(paths.root)},
+        "EnvironmentVariables": {"PATH": path_env, "NEARSAY_HOME": str(paths.root)},
     }
 
 

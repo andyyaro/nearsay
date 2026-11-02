@@ -1,8 +1,8 @@
 """Manage the iPhone's entry in ``~/.ssh/authorized_keys``.
 
-The line tapclaude writes looks like this::
+The line nearsay writes looks like this::
 
-    command="/Users/you/.tapclaude/bin/tapclaude-receive",restrict ssh-ed25519 AAAA… tapclaude:iphone
+    command="/Users/you/.nearsay/bin/nearsay-receive",restrict ssh-ed25519 AAAA… nearsay:iphone
 
 * ``command=`` forces every login with this key to run the receiver and nothing
   else. Whatever the phone asks to run is ignored as a command and handed to the
@@ -28,7 +28,7 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import List, Optional, Sequence, Tuple
 
-MARK = "tapclaude:"
+MARK = "nearsay:"
 KEY_TYPES = (
     "ssh-ed25519",
     "ssh-rsa",
@@ -133,7 +133,7 @@ def _label_of(line: str) -> Optional[str]:
 
 def add_key(path: Path, receive_cmd: Path, key: PublicKey, label: str = "iphone",
             sources: Sequence[str] = (), force: bool = False) -> Tuple[str, List[str]]:
-    """Add or replace the tapclaude line for ``label``. Returns (line, warnings)."""
+    """Add or replace the nearsay line for ``label``. Returns (line, warnings)."""
     new_line = build_line(receive_cmd, key, label, sources)
     lines = _read(path)
     warnings: List[str] = []
@@ -144,13 +144,13 @@ def add_key(path: Path, receive_cmd: Path, key: PublicKey, label: str = "iphone"
             continue  # replaced below
         if _contains_blob(ln, key.blob):
             if mine:
-                warnings.append(f"Removed the same key from tapclaude label {mine!r}.")
+                warnings.append(f"Removed the same key from nearsay label {mine!r}.")
                 continue
             if not force:
                 raise KeyError_(
                     "This exact key is already in authorized_keys WITHOUT restrictions, which would let "
                     "it open a full shell on your Mac. Remove that line or re-run with --force to "
-                    "replace it with the restricted tapclaude line.")
+                    "replace it with the restricted nearsay line.")
             warnings.append("Replaced an unrestricted line holding the same key with the restricted line.")
             continue
         kept.append(ln)
@@ -169,7 +169,7 @@ def remove_keys(path: Path, label: Optional[str] = None) -> int:
 
 
 def list_keys(path: Path) -> List[Tuple[str, str, str]]:
-    """(label, key type, short fingerprint-ish id) for each tapclaude line."""
+    """(label, key type, short fingerprint-ish id) for each nearsay line."""
     out = []
     for ln in _read(path):
         label = _label_of(ln)

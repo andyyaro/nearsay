@@ -2,8 +2,8 @@
 
     ssh client (stands in for Shortcuts' "Run Script Over SSH")
       -> sshd with our authorized_keys line (command=…,restrict)
-      -> installed tapclaude-receive wrapper (Python 3.9, -I)
-      -> queue -> installed tapclaude-dispatch wrapper
+      -> installed nearsay-receive wrapper (Python 3.9, -I)
+      -> queue -> installed nearsay-dispatch wrapper
       -> generated run.command executed by zsh -> fake `claude` records its argv
 
 Skipped automatically where sshd/ssh/zsh are not installed.
@@ -24,10 +24,10 @@ from pathlib import Path
 from helpers import FAKE_CLAUDE, ROOT, have, run
 
 sys.path.insert(0, str(ROOT))
-from tapclaude import keys  # noqa: E402
+from nearsay import keys  # noqa: E402
 
 SSHD = shutil.which("sshd") or "/usr/sbin/sshd"
-PY = os.environ.get("TAPCLAUDE_TEST_PYTHON") or shutil.which("python3.9") or sys.executable
+PY = os.environ.get("NEARSAY_TEST_PYTHON") or shutil.which("python3.9") or sys.executable
 CAN_RUN = all(have(x) for x in (SSHD, "ssh", "ssh-keygen", "zsh"))
 
 
@@ -41,10 +41,10 @@ def free_port() -> int:
 class SshEndToEnd(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
-        cls.tmp = Path(tempfile.mkdtemp(prefix="tapclaude-e2e-"))
+        cls.tmp = Path(tempfile.mkdtemp(prefix="nearsay-e2e-"))
         cls.home = cls.tmp / "home"
         cls.home.mkdir()
-        cls.tap = cls.home / ".tapclaude"
+        cls.tap = cls.home / ".nearsay"
         cls.marker = cls.tmp / "PWNED"
         cls.claude_log = cls.tmp / "claude.jsonl"
 
@@ -53,9 +53,9 @@ class SshEndToEnd(unittest.TestCase):
         fake.write_text(FAKE_CLAUDE.format(python=sys.executable))
         fake.chmod(0o755)
 
-        env = dict(os.environ, HOME=str(cls.home), TAPCLAUDE_ALLOW_NON_MACOS="1", TAPCLAUDE_SKIP_LAUNCHD="1",
-                   TAPCLAUDE_PYTHON=PY, TAPCLAUDE_CLAUDE=str(fake), PATH="/usr/bin:/bin")
-        env.pop("TAPCLAUDE_HOME", None)
+        env = dict(os.environ, HOME=str(cls.home), NEARSAY_ALLOW_NON_MACOS="1", NEARSAY_SKIP_LAUNCHD="1",
+                   NEARSAY_PYTHON=PY, NEARSAY_CLAUDE=str(fake), PATH="/usr/bin:/bin")
+        env.pop("NEARSAY_HOME", None)
         cp = run(["bash", str(ROOT / "install.sh")], env=env, timeout=120)
         assert cp.returncode == 0, cp.stdout + cp.stderr
 
@@ -72,7 +72,7 @@ class SshEndToEnd(unittest.TestCase):
         run(["ssh-keygen", "-q", "-t", "ed25519", "-N", "", "-C", "shortcuts", "-f", str(cls.tmp / "phone")])
         run(["ssh-keygen", "-q", "-t", "ed25519", "-N", "", "-f", str(cls.tmp / "fenced")])
         cls.ak = cls.tmp / "authorized_keys"
-        receive_cmd = cls.tap / "bin" / "tapclaude-receive"
+        receive_cmd = cls.tap / "bin" / "nearsay-receive"
         keys.add_key(cls.ak, receive_cmd, keys.parse_public_key((cls.tmp / "phone.pub").read_text()), "iphone")
         keys.add_key(cls.ak, receive_cmd, keys.parse_public_key((cls.tmp / "fenced.pub").read_text()), "fenced",
                      sources=["10.99.99.99/32"])
@@ -114,7 +114,7 @@ class SshEndToEnd(unittest.TestCase):
 
     def dispatch(self):
         env = {"HOME": str(self.home), "PATH": "/usr/bin:/bin", "FAKE_CLAUDE_LOG": str(self.claude_log)}
-        return run([str(self.tap / "bin" / "tapclaude-dispatch")], env=env, timeout=60)
+        return run([str(self.tap / "bin" / "nearsay-dispatch")], env=env, timeout=60)
 
     def calls(self):
         if not self.claude_log.exists():

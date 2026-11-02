@@ -80,22 +80,22 @@ def render_run_script(job: Job, project: Project, argv: List[str], prompt_file: 
                       title: str, keep_shell: bool) -> str:
     q = shlex.quote
     claude_cmd = " ".join(q(a) for a in argv)
-    banner = "tapclaude ▸ " + project.name + " ▸ " + preview(job.task, 100)
-    missing = "tapclaude: cannot open " + str(project.path)
+    banner = "nearsay ▸ " + project.name + " ▸ " + preview(job.task, 100)
+    missing = "nearsay: cannot open " + str(project.path)
     lines = [
         "#!/bin/zsh -l",
-        f"# tapclaude job {job.id}. Generated file; safe to delete.",
-        f"export TAPCLAUDE_JOB_ID={q(job.id)}",
-        f"export TAPCLAUDE_PROJECT={q(project.name)}",
+        f"# nearsay job {job.id}. Generated file; safe to delete.",
+        f"export NEARSAY_JOB_ID={q(job.id)}",
+        f"export NEARSAY_PROJECT={q(project.name)}",
         f"printf '\\033]0;%s\\007' {q(title)}",
         f"cd -- {q(str(project.path))} || {{ print -r -- {q(missing)}; read -k 1 -s; exit 1; }}",
-        f"TAPCLAUDE_TASK=\"$(<{q(str(prompt_file))})\"",
+        f"NEARSAY_TASK=\"$(<{q(str(prompt_file))})\"",
         f"print -r -- {q(banner)}",
         "print",
-        f"{claude_cmd} \"$TAPCLAUDE_TASK\"",
+        f"{claude_cmd} \"$NEARSAY_TASK\"",
         "code=$?",
         "if (( code != 0 )); then",
-        "  print -r -- \"tapclaude: claude exited with status $code. Press any key to close.\"",
+        "  print -r -- \"nearsay: claude exited with status $code. Press any key to close.\"",
         "  read -k 1 -s",
         "  exit $code",
         "fi",
@@ -135,7 +135,7 @@ def opener_argv(cfg: Config, script: Path) -> List[str]:
 def review_url(project_path: Path, task: str) -> str:
     q = task
     if len(q) > DEEP_LINK_MAX_Q:
-        note = "\n\n[tapclaude: task truncated to fit a deep link]"
+        note = "\n\n[nearsay: task truncated to fit a deep link]"
         q = q[: DEEP_LINK_MAX_Q - len(note)] + note
     return "claude-cli://open?cwd=" + quote(str(project_path), safe="/") + "&q=" + quote(q, safe="")
 

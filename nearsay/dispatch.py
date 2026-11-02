@@ -1,7 +1,7 @@
 """The launchd entry point that actually starts Claude Code.
 
 launchd runs this program (as you, inside your logged-in macOS session) whenever
-``~/.tapclaude/queue`` is not empty. Running here rather than in the SSH session
+``~/.nearsay/queue`` is not empty. Running here rather than in the SSH session
 matters: SSH sessions cannot open windows, cannot show permission prompts, and
 are blocked by macOS privacy controls from ``~/Documents``, ``~/Desktop`` and
 ``~/Downloads``, where many projects live.
@@ -42,7 +42,7 @@ class Dispatcher:
         self.clock = clock
         self.sleep = sleep
         self.log_path = paths.logs / "dispatch.log"
-        self.processed = []  # (job_id, LaunchResult) for tests and `tapclaude test`
+        self.processed = []  # (job_id, LaunchResult) for tests and `nearsay test`
 
     def run(self, linger: Optional[float] = None) -> int:
         self.paths.ensure()
@@ -98,7 +98,7 @@ class Dispatcher:
         try:
             cfg = load(self.paths.config)
         except ConfigMissing:
-            self._fail(job_dir, job_id, "config file missing; run tapclaude init", Notifier(default_runner, True))
+            self._fail(job_dir, job_id, "config file missing; run nearsay init", Notifier(default_runner, True))
             return
         except ConfigError as e:
             self._fail(job_dir, job_id, "config problem: " + e.problems[0], Notifier(default_runner, True))
@@ -130,8 +130,8 @@ class Dispatcher:
         jobs.write_status(job_dir, "failed", detail)
         log(self.log_path, "failed", id=job_id, detail=detail)
         where = f" ({job.project})" if job else ""
-        notifier.notify("tapclaude ✗ task not started" + where, detail)
-        notifier.speak("Tap Claude could not start the task")
+        notifier.notify("nearsay ✗ task not started" + where, detail)
+        notifier.speak("nearsay could not start the task")
 
 
 def _mode_label(mode: str) -> str:

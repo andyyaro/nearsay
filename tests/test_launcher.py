@@ -7,8 +7,8 @@ from urllib.parse import parse_qs, urlparse
 from helpers import RecordingRunner, TapTestCase, have, run
 from test_config_jobs import make_job
 
-from tapclaude import config as config_mod
-from tapclaude.launcher import (DEEP_LINK_MAX_Q, Launcher, claude_args, opener_argv, render_run_script,
+from nearsay import config as config_mod
+from nearsay.launcher import (DEEP_LINK_MAX_Q, Launcher, claude_args, opener_argv, render_run_script,
                                 review_url, session_name)
 
 HOSTILE = [
@@ -51,7 +51,7 @@ class LauncherUnitTests(TapTestCase):
         self.assertNotIn("--remote-control", claude_args(cfg, cfg.project("orkestra"), make_job(), "N"))
 
     def test_opener_argv_for_every_terminal(self):
-        script = Path("/Users/andy/.tapclaude/jobs/x/run.command")
+        script = Path("/Users/andy/.nearsay/jobs/x/run.command")
         expect = {
             "Terminal": ["open", "-a", "Terminal", str(script)],
             "Ghostty": ["open", "-na", "Ghostty", "--args", "-e", str(script)],
@@ -106,9 +106,9 @@ class RunScriptExecutionTests(TapTestCase):
         self.assertEqual(stat.S_IMODE(os.stat(script).st_mode), 0o700)
         self.assertEqual(stat.S_IMODE(os.stat(job_dir / "prompt.txt").st_mode), 0o600)
         body = script.read_text(encoding="utf-8")
-        # The full task reaches claude only through prompt.txt -> "$TAPCLAUDE_TASK" (one argv item).
+        # The full task reaches claude only through prompt.txt -> "$NEARSAY_TASK" (one argv item).
         # Short previews appear in the window title and session name, always shell-quoted.
-        self.assertEqual(sum(ln.endswith('"$TAPCLAUDE_TASK"') for ln in body.splitlines()), 1)
+        self.assertEqual(sum(ln.endswith('"$NEARSAY_TASK"') for ln in body.splitlines()), 1)
         syntax = run(["zsh", "-n", str(script)])
         self.assertEqual(syntax.returncode, 0, syntax.stderr)
         env = dict(os.environ, FAKE_CLAUDE_LOG=str(self.claude_log), FAKE_CLAUDE_EXIT=str(exit_code))

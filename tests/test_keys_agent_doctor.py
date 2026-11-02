@@ -6,8 +6,8 @@ from pathlib import Path
 
 from helpers import RecordingRunner, TapTestCase, have, run
 
-from tapclaude import doctor, keys, launchagent
-from tapclaude.keys import KeyError_
+from nearsay import doctor, keys, launchagent
+from nearsay.keys import KeyError_
 
 
 def gen_key(tmp: Path, kind: str = "ed25519") -> str:
@@ -52,10 +52,10 @@ class KeyTests(TapTestCase):
 
     def test_line_format(self):
         k = keys.parse_public_key(self.pub)
-        line = keys.build_line(Path("/Users/a/.tapclaude/bin/tapclaude-receive"), k, "iphone", ["192.168.1.7/24"])
-        self.assertTrue(line.startswith('command="/Users/a/.tapclaude/bin/tapclaude-receive",restrict,'
+        line = keys.build_line(Path("/Users/a/.nearsay/bin/nearsay-receive"), k, "iphone", ["192.168.1.7/24"])
+        self.assertTrue(line.startswith('command="/Users/a/.nearsay/bin/nearsay-receive",restrict,'
                                         'from="192.168.1.0/24" ssh-ed25519 '))
-        self.assertTrue(line.endswith(" tapclaude:iphone"))
+        self.assertTrue(line.endswith(" nearsay:iphone"))
         with self.assertRaises(KeyError_):
             keys.build_line(Path('/bad"path'), k, "iphone")
         with self.assertRaises(KeyError_):
@@ -72,7 +72,7 @@ class KeyTests(TapTestCase):
         keys.add_key(self.ak, Path("/r"), k, "iphone")
         lines = self.ak.read_text().splitlines()
         self.assertEqual(lines[:2], ["# my laptop", other + " laptop"])
-        self.assertEqual(sum("tapclaude:iphone" in ln for ln in lines), 1)
+        self.assertEqual(sum("nearsay:iphone" in ln for ln in lines), 1)
         self.assertEqual(stat.S_IMODE(os.stat(self.ak).st_mode), 0o600)
         self.assertEqual(stat.S_IMODE(os.stat(self.ak.parent).st_mode), 0o700)
         self.assertEqual(keys.list_keys(self.ak)[0][:2], ("iphone", "ssh-ed25519"))
@@ -108,7 +108,7 @@ class KeyTests(TapTestCase):
 class LaunchAgentTests(TapTestCase):
     def test_plist_contents(self):
         d = launchagent.build(self.paths, "/a:/b")
-        self.assertEqual(d["Label"], "com.tapclaude.dispatch")
+        self.assertEqual(d["Label"], "com.nearsay.dispatch")
         self.assertEqual(d["QueueDirectories"], [str(self.paths.queue)])
         self.assertTrue(os.path.isabs(d["ProgramArguments"][0]))
         self.assertNotIn("~", d["QueueDirectories"][0])
@@ -119,7 +119,7 @@ class LaunchAgentTests(TapTestCase):
 
     def test_rejects_relative_paths(self):
         d = launchagent.build(self.paths, "/a")
-        d["QueueDirectories"] = ["~/.tapclaude/queue"]
+        d["QueueDirectories"] = ["~/.nearsay/queue"]
         with self.assertRaises(ValueError):
             launchagent.write(self.tmp / "x.plist", d)
 
@@ -128,7 +128,7 @@ class LaunchAgentTests(TapTestCase):
         launchagent.load(r, Path("/p.plist"))
         uid = os.getuid()
         self.assertEqual([c["argv"] for c in r.calls], [
-            ["launchctl", "bootout", f"gui/{uid}/com.tapclaude.dispatch"],
+            ["launchctl", "bootout", f"gui/{uid}/com.nearsay.dispatch"],
             ["launchctl", "bootstrap", f"gui/{uid}", "/p.plist"],
         ])
         self.assertTrue(launchagent.is_loaded(RecordingRunner(returncode=0)))
@@ -190,4 +190,4 @@ class DoctorTests(TapTestCase):
         self.paths.config.unlink()
         c = self.checks()
         self.assertEqual(c["Config"].status, doctor.FAIL)
-        self.assertIn("tapclaude init", c["Config"].fix)
+        self.assertIn("nearsay init", c["Config"].fix)

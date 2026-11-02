@@ -1,7 +1,7 @@
-"""Where tapclaude keeps its files.
+"""Where nearsay keeps its files.
 
-Everything lives under one folder (``~/.tapclaude`` by default, or the folder
-named by the ``TAPCLAUDE_HOME`` environment variable). The folder is outside
+Everything lives under one folder (``~/.nearsay`` by default, or the folder
+named by the ``NEARSAY_HOME`` environment variable). The folder is outside
 ``~/Documents``, ``~/Desktop`` and ``~/Downloads`` on purpose: macOS privacy
 controls (TCC) block a process started by the SSH server from those folders,
 and the receiver must be able to write here without any extra permission.
@@ -13,7 +13,7 @@ import os
 from dataclasses import dataclass
 from pathlib import Path
 
-ENV_HOME = "TAPCLAUDE_HOME"
+ENV_HOME = "NEARSAY_HOME"
 
 
 @dataclass(frozen=True)
@@ -65,15 +65,15 @@ class Paths:
 
     @property
     def receive_cmd(self) -> Path:
-        return self.bin / "tapclaude-receive"
+        return self.bin / "nearsay-receive"
 
     @property
     def dispatch_cmd(self) -> Path:
-        return self.bin / "tapclaude-dispatch"
+        return self.bin / "nearsay-dispatch"
 
     @property
     def cli_cmd(self) -> Path:
-        return self.bin / "tapclaude"
+        return self.bin / "nearsay"
 
     def ensure(self) -> None:
         for d in (self.root, self.queue, self.incoming, self.jobs, self.rejected, self.logs, self.bin):
@@ -86,5 +86,5 @@ class Paths:
 
 def default_paths() -> Paths:
     env = os.environ.get(ENV_HOME)
-    root = Path(env).expanduser() if env else Path.home() / ".tapclaude"
+    root = Path(env).expanduser() if env else Path.home() / ".nearsay"
     return Paths(root.absolute())

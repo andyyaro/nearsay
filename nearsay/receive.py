@@ -1,7 +1,7 @@
 """The SSH entry point. This is the only program the iPhone's key may run.
 
 ``~/.ssh/authorized_keys`` pins the phone's key to this command with
-``command="…/tapclaude-receive",restrict``. Whatever the Shortcut puts in its
+``command="…/nearsay-receive",restrict``. Whatever the Shortcut puts in its
 *Script* field arrives here as the ``SSH_ORIGINAL_COMMAND`` environment variable
 and is treated as **data** (a sticker or project name), never executed. The
 dictated task arrives on standard input (the Shortcut's *Input* field), so it
@@ -34,7 +34,7 @@ from .text import normalize_task, preview
 MAX_STDIN_BYTES = 64 * 1024
 MAX_HINT_CHARS = 200
 TOKEN_RE = re.compile(r"^[A-Za-z0-9][A-Za-z0-9._-]{0,63}$")
-NOOP_TOKENS = {"tap", "-", "tapclaude"}
+NOOP_TOKENS = {"tap", "-", "nearsay"}
 COMMANDS = {"ping", "status"}
 OK = "✓"   # ✓
 FAIL = "✗"  # ✗
@@ -143,10 +143,10 @@ def run(stdin: IO[bytes], env: Mapping[str, str], out: IO[str], paths: Optional[
     try:
         cfg = load(paths.config)
     except ConfigMissing:
-        return say(f"{FAIL} tapclaude is not set up on the Mac yet. Run: tapclaude doctor")
+        return say(f"{FAIL} nearsay is not set up on the Mac yet. Run: nearsay doctor")
     except ConfigError as e:
         log(log_path, "config_error", problems=e.problems)
-        return say(f"{FAIL} Config problem on the Mac: {e.problems[0]} (run: tapclaude doctor)")
+        return say(f"{FAIL} Config problem on the Mac: {e.problems[0]} (run: nearsay doctor)")
 
     hint_raw = env.get("SSH_ORIGINAL_COMMAND", "")
     hint = parse_hint(hint_raw, cfg)
@@ -155,7 +155,7 @@ def run(stdin: IO[bytes], env: Mapping[str, str], out: IO[str], paths: Optional[
         return say(f"{FAIL} {hint.error}")
     if hint.command == "ping":
         host = os.uname().nodename
-        return say(f"{OK} tapclaude {__version__} on {host} is reachable.")
+        return say(f"{OK} nearsay {__version__} on {host} is reachable.")
     if hint.command == "status":
         return say(" | ".join(_status_lines(paths)))
 
@@ -201,7 +201,7 @@ def run(stdin: IO[bytes], env: Mapping[str, str], out: IO[str], paths: Optional[
     verb = {"run": "starting", "review": "ready for review", "background": "starting in background"}[mode]
     line = f"{OK} {r.project} · {verb}: {preview(r.task, 60)}"
     if backlog >= 3:
-        line += f" ({backlog} tasks already waiting — is the Mac awake? run: tapclaude doctor)"
+        line += f" ({backlog} tasks already waiting — is the Mac awake? run: nearsay doctor)"
     return say(line)
 
 
@@ -213,8 +213,8 @@ def main(argv: Optional[List[str]] = None) -> int:
             log(default_paths().logs / "receive.log", "crash", error=repr(e))
         except Exception:
             pass
-        sys.stdout.write(f"{FAIL} tapclaude hit an internal error on the Mac: {type(e).__name__}. "
-                         "See ~/.tapclaude/logs/receive.log\n")
+        sys.stdout.write(f"{FAIL} nearsay hit an internal error on the Mac: {type(e).__name__}. "
+                         "See ~/.nearsay/logs/receive.log\n")
         return 1
 
 

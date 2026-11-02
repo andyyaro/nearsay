@@ -4,10 +4,10 @@ import os
 from helpers import RecordingRunner, TapTestCase
 from test_config_jobs import make_job
 
-from tapclaude import jobs
-from tapclaude.dispatch import Dispatcher
-from tapclaude.launcher import Launcher, LaunchResult
-from tapclaude.notify import Notifier
+from nearsay import jobs
+from nearsay.dispatch import Dispatcher
+from nearsay.launcher import Launcher, LaunchResult
+from nearsay.notify import Notifier
 
 
 class FakeLauncher:

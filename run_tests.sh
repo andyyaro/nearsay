@@ -8,5 +8,5 @@
 set -euo pipefail
 cd "$(dirname "${BASH_SOURCE[0]}")/tests"
 PY="${PYTHON:-python3}"
-export TAPCLAUDE_TEST_PYTHON="${TAPCLAUDE_TEST_PYTHON:-$(command -v "$PY")}"
+export NEARSAY_TEST_PYTHON="${NEARSAY_TEST_PYTHON:-$(command -v "$PY")}"
 exec "$PY" -m unittest discover -s . -p 'test_*.py' "$@"

@@ -1,4 +1,4 @@
-"""tapclaude: tap an NFC sticker with your iPhone, speak a task, and a Claude Code
+"""nearsay: tap an NFC sticker with your iPhone, speak a task, and a Claude Code
 session starts on your Mac in the right project.
 
 The package is pure standard library and runs on the Python 3.9 that ships with

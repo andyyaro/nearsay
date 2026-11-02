@@ -1,8 +1,8 @@
 from helpers import TapTestCase
 
-from tapclaude import config as config_mod
-from tapclaude.router import resolve_name, route
-from tapclaude.text import normalize_task, preview, sound_key
+from nearsay import config as config_mod
+from nearsay.router import resolve_name, route
+from nearsay.text import normalize_task, preview, sound_key
 
 
 class TextTests(TapTestCase):

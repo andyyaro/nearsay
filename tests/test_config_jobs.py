@@ -4,9 +4,9 @@ import stat
 
 from helpers import TapTestCase
 
-from tapclaude import config as config_mod
-from tapclaude import jobs
-from tapclaude.config import ConfigError
+from nearsay import config as config_mod
+from nearsay import jobs
+from nearsay.config import ConfigError
 
 
 class ConfigTests(TapTestCase):
@@ -22,7 +22,7 @@ class ConfigTests(TapTestCase):
         cfg = config_mod.parse(config_mod.default_raw())
         self.assertEqual(cfg.default_project, "inbox")
         self.assertEqual(cfg.mode, "run")
-        self.assertTrue(str(cfg.projects["inbox"].path).endswith("tapclaude-inbox"))
+        self.assertTrue(str(cfg.projects["inbox"].path).endswith("nearsay-inbox"))
 
     def test_project_overrides_inherit_globals(self):
         cfg = self.cfg()

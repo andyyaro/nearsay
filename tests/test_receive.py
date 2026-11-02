@@ -3,7 +3,7 @@ import json
 
 from helpers import TapTestCase
 
-from tapclaude import jobs, receive
+from nearsay import jobs, receive
 
 
 class ReceiveTests(TapTestCase):
@@ -133,5 +133,5 @@ class ReceiveTests(TapTestCase):
         self.assertIsNotNone(h.error)
 
     def test_hint_parser_noops(self):
-        h = receive.parse_hint("tap - tapclaude", self.cfg())
+        h = receive.parse_hint("tap - nearsay", self.cfg())
         self.assertEqual((h.project, h.mode, h.command, h.error), (None, None, None, None))

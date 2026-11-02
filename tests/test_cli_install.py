@@ -9,18 +9,18 @@ import unittest
 
 from helpers import ROOT, TapTestCase, have, run
 
-from tapclaude import cli, jobs
+from nearsay import cli, jobs
 
-INSTALL_PY = os.environ.get("TAPCLAUDE_TEST_PYTHON") or shutil.which("python3.9") or sys.executable
+INSTALL_PY = os.environ.get("NEARSAY_TEST_PYTHON") or shutil.which("python3.9") or sys.executable
 
 
 class CliTests(TapTestCase):
     def setUp(self):
         super().setUp()
         self.home = self.tmp / "home"
-        self.old_env = {k: os.environ.get(k) for k in ("HOME", "TAPCLAUDE_HOME", "FAKE_CLAUDE_LOG")}
+        self.old_env = {k: os.environ.get(k) for k in ("HOME", "NEARSAY_HOME", "FAKE_CLAUDE_LOG")}
         os.environ["HOME"] = str(self.home)
-        os.environ["TAPCLAUDE_HOME"] = str(self.paths.root)
+        os.environ["NEARSAY_HOME"] = str(self.paths.root)
         os.environ["FAKE_CLAUDE_LOG"] = str(self.claude_log)
         self.addCleanup(self.restore_env)
 
@@ -159,9 +159,9 @@ class InstallTests(TapTestCase):
     """Run the real install.sh into a throwaway home (launchd step skipped off macOS)."""
 
     def install(self, home):
-        env = dict(os.environ, HOME=str(home), TAPCLAUDE_ALLOW_NON_MACOS="1", TAPCLAUDE_SKIP_LAUNCHD="1",
-                   TAPCLAUDE_PYTHON=INSTALL_PY, TAPCLAUDE_CLAUDE=str(self.fake_claude), PATH="/usr/bin:/bin")
-        env.pop("TAPCLAUDE_HOME", None)
+        env = dict(os.environ, HOME=str(home), NEARSAY_ALLOW_NON_MACOS="1", NEARSAY_SKIP_LAUNCHD="1",
+                   NEARSAY_PYTHON=INSTALL_PY, NEARSAY_CLAUDE=str(self.fake_claude), PATH="/usr/bin:/bin")
+        env.pop("NEARSAY_HOME", None)
         return run(["bash", str(ROOT / "install.sh")], env=env, timeout=120)
 
     def test_install_upgrade_and_wrappers(self):
@@ -169,25 +169,25 @@ class InstallTests(TapTestCase):
         home.mkdir()
         cp = self.install(home)
         self.assertEqual(cp.returncode, 0, cp.stdout + cp.stderr)
-        tap = home / ".tapclaude"
-        for f in ("bin/tapclaude", "bin/tapclaude-receive", "bin/tapclaude-dispatch", "app/tapclaude_entry.py",
-                  "app/tapclaude/cli.py", "config.json"):
+        tap = home / ".nearsay"
+        for f in ("bin/nearsay", "bin/nearsay-receive", "bin/nearsay-dispatch", "app/nearsay_entry.py",
+                  "app/nearsay/cli.py", "config.json"):
             self.assertTrue((tap / f).exists(), f)
-        self.assertTrue((home / ".local" / "bin" / "tapclaude").is_symlink())
-        with open(home / "Library" / "LaunchAgents" / "com.tapclaude.dispatch.plist", "rb") as f:
+        self.assertTrue((home / ".local" / "bin" / "nearsay").is_symlink())
+        with open(home / "Library" / "LaunchAgents" / "com.nearsay.dispatch.plist", "rb") as f:
             plist = plistlib.load(f)
         self.assertEqual(plist["QueueDirectories"], [str(tap / "queue")])
-        self.assertEqual(plist["ProgramArguments"], [str(tap / "bin" / "tapclaude-dispatch")])
+        self.assertEqual(plist["ProgramArguments"], [str(tap / "bin" / "nearsay-dispatch")])
         self.assertIn(str(self.fake_claude.parent), plist["EnvironmentVariables"]["PATH"])
         cfg = json.loads((tap / "config.json").read_text())
         self.assertEqual(cfg["claude_path"], str(self.fake_claude))
         self.assertIn("Next steps", cp.stdout)
-        wrapper = (tap / "bin" / "tapclaude-receive").read_text()
+        wrapper = (tap / "bin" / "nearsay-receive").read_text()
         self.assertIn(f"'{INSTALL_PY}' -I", wrapper)
 
         # Wrapper works and reports its version.
-        v = run([str(tap / "bin" / "tapclaude"), "--version"], env=dict(os.environ, HOME=str(home)))
-        self.assertIn("tapclaude 1.", v.stdout)
+        v = run([str(tap / "bin" / "nearsay"), "--version"], env=dict(os.environ, HOME=str(home)))
+        self.assertIn("nearsay 1.", v.stdout)
 
         # Re-running keeps the user's config.
         cfg["projects"]["inbox"]["aliases"] = ["kept"]
@@ -198,7 +198,7 @@ class InstallTests(TapTestCase):
         self.assertEqual(json.loads((tap / "config.json").read_text())["projects"]["inbox"]["aliases"], ["kept"])
 
         # Receiver wrapper end to end (no SSH): queue a task from stdin.
-        r = run([str(tap / "bin" / "tapclaude-receive")], input="In inbox, hello from the wrapper",
+        r = run([str(tap / "bin" / "nearsay-receive")], input="In inbox, hello from the wrapper",
                 env={"HOME": str(home), "PATH": "/usr/bin:/bin", "SSH_ORIGINAL_COMMAND": "tap"})
         self.assertIn("✓ inbox", r.stdout, r.stderr)
         self.assertEqual(len(list((tap / "queue").glob("*.json"))), 1)
@@ -206,8 +206,8 @@ class InstallTests(TapTestCase):
     def test_refuses_spaces_in_install_folder(self):
         home = self.tmp / "h"
         home.mkdir()
-        env = dict(os.environ, HOME=str(home), TAPCLAUDE_ALLOW_NON_MACOS="1", TAPCLAUDE_SKIP_LAUNCHD="1",
-                   TAPCLAUDE_HOME=str(self.tmp / "with space"))
+        env = dict(os.environ, HOME=str(home), NEARSAY_ALLOW_NON_MACOS="1", NEARSAY_SKIP_LAUNCHD="1",
+                   NEARSAY_HOME=str(self.tmp / "with space"))
         cp = run(["bash", str(ROOT / "install.sh")], env=env)
         self.assertNotEqual(cp.returncode, 0)
         self.assertIn("must not contain spaces", cp.stderr)

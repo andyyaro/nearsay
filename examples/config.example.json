@@ -19,7 +19,7 @@
   "fuzzy_threshold": 0.84,
   "path_env": "/Users/you/.local/bin:/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin",
   "projects": {
-    "inbox": { "path": "~/tapclaude-inbox", "aliases": ["inbox", "scratch"] },
+    "inbox": { "path": "~/nearsay-inbox", "aliases": ["inbox", "scratch"] },
     "orkestra": { "path": "~/code/orkestra", "aliases": ["orchestra", "orchestra runtime"] },
     "provalume": { "path": "~/code/provalume", "aliases": ["prova loom"], "permission_mode": "acceptEdits" },
     "ev-model": { "path": "~/code/ev-charging-model", "aliases": ["ev model", "charge ready"], "mode": "review" },

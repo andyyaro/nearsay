@@ -43,7 +43,7 @@ DEFAULTS: Dict[str, Any] = {
     "fuzzy_threshold": 0.84,
     "path_env": "/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin",
     "projects": {
-        "inbox": {"path": "~/tapclaude-inbox", "aliases": ["inbox", "scratch"]},
+        "inbox": {"path": "~/nearsay-inbox", "aliases": ["inbox", "scratch"]},
     },
     "stickers": {},
 }

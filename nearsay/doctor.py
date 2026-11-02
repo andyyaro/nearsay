@@ -1,4 +1,4 @@
-"""``tapclaude doctor``: check every link in the chain and say how to fix it."""
+"""``nearsay doctor``: check every link in the chain and say how to fix it."""
 
 from __future__ import annotations
 
@@ -60,7 +60,7 @@ def run_checks(paths: Paths, runner: Callable, home: Optional[Path] = None,
     add = out.append
 
     add(Check(OK if is_macos else WARN, "macOS", platform.platform(),
-              "" if is_macos else "tapclaude launches Mac apps; only the tests run elsewhere."))
+              "" if is_macos else "nearsay launches Mac apps; only the tests run elsewhere."))
     add(Check(OK if sys.version_info >= (3, 9) else FAIL, "Python", sys.version.split()[0],
               "" if sys.version_info >= (3, 9) else "Python 3.9 or newer is required."))
 
@@ -69,22 +69,22 @@ def run_checks(paths: Paths, runner: Callable, home: Optional[Path] = None,
         add(Check(OK, "Config", str(paths.config)))
     except ConfigMissing:
         cfg = None
-        add(Check(FAIL, "Config", f"{paths.config} does not exist", "Run: tapclaude init"))
+        add(Check(FAIL, "Config", f"{paths.config} does not exist", "Run: nearsay init"))
     except ConfigError as e:
         cfg = None
-        add(Check(FAIL, "Config", "; ".join(e.problems), f"Edit {paths.config}, then run tapclaude doctor again."))
+        add(Check(FAIL, "Config", "; ".join(e.problems), f"Edit {paths.config}, then run nearsay doctor again."))
 
     if cfg:
         for name, p in sorted(cfg.projects.items()):
             tag = " (default)" if name == cfg.default_project else ""
             if not p.path.is_dir():
                 add(Check(FAIL, f"Project {name}{tag}", f"folder not found: {p.path}",
-                          f"Create it, or: tapclaude project add {name} /correct/path"))
+                          f"Create it, or: nearsay project add {name} /correct/path"))
                 continue
             extras = []
             if p.worktree and not (p.path / ".git").exists():
                 add(Check(FAIL, f"Project {name}{tag}", "worktree is on but the folder is not a git repository",
-                          f"Run git init there, or: tapclaude project add {name} {p.path} (without --worktree)"))
+                          f"Run git init there, or: nearsay project add {name} {p.path} (without --worktree)"))
                 continue
             if p.permission_mode == "bypassPermissions":
                 add(Check(WARN, f"Project {name}{tag}", "permission mode is bypassPermissions",
@@ -100,7 +100,7 @@ def run_checks(paths: Paths, runner: Callable, home: Optional[Path] = None,
         claude = find_claude(cfg)
         if not claude:
             add(Check(FAIL, "Claude Code", f"cannot find {cfg.claude_path!r}",
-                      "Install Claude Code, then: tapclaude set claude_path \"$(command -v claude)\""))
+                      "Install Claude Code, then: nearsay set claude_path \"$(command -v claude)\""))
         else:
             try:
                 cp = runner([claude, "--version"], timeout=20)
@@ -118,7 +118,7 @@ def run_checks(paths: Paths, runner: Callable, home: Optional[Path] = None,
                           Path("/Applications/Utilities")]
                 found = next((pl / f"{app}.app" for pl in places if (pl / f"{app}.app").exists()), None)
                 add(Check(OK if found else FAIL, "Terminal app", str(found or f"{app}.app not found"),
-                          "" if found else "Install it or: tapclaude set terminal Terminal"))
+                          "" if found else "Install it or: nearsay set terminal Terminal"))
         if cfg.mode == "review" or any(p.mode == "review" for p in cfg.projects.values()):
             handler = home / "Applications" / "Claude Code URL Handler.app"
             add(Check(OK if handler.exists() else FAIL, "Review mode link handler", str(handler),
@@ -138,10 +138,10 @@ def run_checks(paths: Paths, runner: Callable, home: Optional[Path] = None,
         text = ak.read_text(encoding="utf-8") if ak.exists() else ""
         if f'command="{paths.receive_cmd}"' not in text:
             add(Check(FAIL, "Phone key target", "the key points to a different receiver path",
-                      "Re-run: tapclaude add-key --from-clipboard (after copying the phone's public key)"))
+                      "Re-run: nearsay add-key --from-clipboard (after copying the phone's public key)"))
     else:
-        add(Check(FAIL, "Phone key", f"no tapclaude key in {ak}",
-                  "Copy the public key from the Shortcut's SSH action, then: tapclaude add-key --from-clipboard"))
+        add(Check(FAIL, "Phone key", f"no nearsay key in {ak}",
+                  "Copy the public key from the Shortcut's SSH action, then: nearsay add-key --from-clipboard"))
     for p, what in ((home, "home folder"), (home / ".ssh", "~/.ssh"), (ak, "authorized_keys")):
         if p.exists() and _bad_perms(p):
             add(Check(FAIL, f"Permissions on {what}", f"{p} is writable by group/others; sshd will refuse keys",
@@ -165,13 +165,13 @@ def run_checks(paths: Paths, runner: Callable, home: Optional[Path] = None,
 
     waiting = jobs.list_queue(paths)
     add(Check(WARN if waiting else OK, "Queue", f"{len(waiting)} waiting" if waiting else "empty",
-              "The dispatcher is not picking tasks up; see ~/.tapclaude/logs/launchd.err.log" if waiting else ""))
+              "The dispatcher is not picking tasks up; see ~/.nearsay/logs/launchd.err.log" if waiting else ""))
 
     last = jobs.recent(paths, 1)
     if last:
         st = jobs.read_status(last[0])
         if st.get("status") == "failed":
-            add(Check(WARN, "Last task", f"{last[0].name}: {st.get('detail', '')}", "See: tapclaude log"))
+            add(Check(WARN, "Last task", f"{last[0].name}: {st.get('detail', '')}", "See: nearsay log"))
         else:
             add(Check(OK, "Last task", f"{last[0].name}: {st.get('status')}"))
     return out
