@@ -44,20 +44,24 @@ and network.
 ## How it works
 
 ```mermaid
-flowchart LR
-    A[NFC sticker<br/>on the Mac] -->|phone touches it| B[Shortcut<br/>Dictate Text]
-    B -->|Run Script Over SSH<br/>words on stdin| C[nearsay-receive<br/>the only program<br/>the key can run]
-    C -->|cleans the text, picks the project| D[(Job queue<br/>~/.nearsay/jobs)]
-    D -->|launchd wakes it| E[nearsay-dispatch<br/>in your desktop session]
-    E --> F[Terminal opens<br/>claude #quot;your task#quot;]
-    F -.Remote Control.-> G[Claude app<br/>on the phone]
-    C -.reply.-> H[Notification on the phone<br/>✓ orkestra · starting: …]
+flowchart TB
+    subgraph phone ["iPhone"]
+        direction LR
+        A[Touch the NFC sticker<br/>on the Mac] --> B[Shortcut listens<br/>Dictate Text] --> X[Run Script Over SSH<br/>sends the words]
+    end
+    subgraph mac ["Mac"]
+        direction LR
+        C[nearsay-receive<br/>the only program<br/>the key can run] -->|picks the project| D[(Job queue)] -->|launchd wakes it| E[nearsay-dispatch<br/>in your desktop session] --> F[Terminal opens<br/>claude #quot;your task#quot;]
+    end
+    phone ==>|"the words, as data, over SSH"| mac
 ```
 
 The phone's key can start one program and nothing else. That program never runs a shell: your
 words travel as data, from standard input to a file to one argument to `claude`. The dispatcher
 runs inside your logged-in desktop session, not over SSH, because only that session can open
-windows and reach folders such as `~/Documents`.
+windows and reach folders such as `~/Documents`. On the way back, the receiver's reply becomes
+the notification on your phone (`✓ orkestra · starting: …`), and Remote Control puts the running
+session in the Claude app.
 
 ### The pieces, in plain terms
 
